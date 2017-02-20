@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" style="overflow: hidden">
+<head>
+    <meta charset="UTF-8">
+    <title>Brave New World</title>
+    <link href="./styles.css" rel="stylesheet">
+    <script src="lib/jquery-3.1.1.min.js"></script>
+    <script src="lib/TWGL.min.js"></script>
+    <script src="lib/require.min.js"></script>
+    <!--<script src="GameWorld.js"></script>-->
+    <!--<script src="GamePlayer.js"></script>-->
+</head>
+<body class="dark cascade">
+    <canvas id="map" class="webgl"></canvas>
+    <!--<div class="col f1">-->
+        <!--<div class="row" style="padding-top:0.65rem">-->
+            <!--<p><b>The Enigmagon</b></p>-->
+            <!--<p style="text-align: right"><b>Duncan Walter</b></p>-->
+        <!--</div>-->
+        <!--<div class="row f1">-->
+            <!--<div class="col">-->
+                <!--<p></p>-->
+                <!--<div class="achievement"><b>SPACE: PAUSE</b></div>-->
+                <!--<div class="achievement"><b>LEFT|RIGHT: SPIN</b></div>-->
+                <!--<div class="achievement"><b>UP|DOWN: ENERGY</b></div>-->
+                <!--<div class="achievement"><b>T: TOGGLE RINGS</b></div>-->
+                <!--<div class="achievement"><b>1-4: CYCLE COLOR</b></div>-->
+                <!--<div class="achievement"><b>F: TOGGLE PULSE</b></div>-->
+                <!--<div class="achievement"><b>S: SPLIT VERTICES</b></div>-->
+                <!--<div class="achievement"><b>H: HIDE CLUTTER</b></div>-->
+            <!--</div>-->
+            <!--<div class="col f1">-->
+
+            <!--</div>-->
+            <!--<div class="col">-->
+                <!--<p></p>-->
+                <!--<button><b>NEW ENIGMAGON</b></button>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <script id="vertex-shader" type="sglsl">
+        attribute vec4 position;
+        uniform mat4 projection;
+        attribute float color;
+        uniform vec4 color1;
+        uniform vec4 color2;
+
+        varying vec4 pass_color;
+
+        void main() {
+            if(color == 1.0){
+                pass_color = color1;
+            } else {
+                pass_color = color2;
+            }
+            gl_Position = projection * position;
+        }
+    </script>
+    <script id="fragment-shader" type="sglsl">
+        precision mediump float;
+
+        varying vec4 pass_color;
+
+        void main() {
+            gl_FragColor = pass_color;
+        }
+    </script>
+    <script src="bundle.js"></script>
+    <script>
+        window.onload = function (){
+            document.getElementById("canvas").focus();
+        };
+//        cascade($(".cascade"));
+        runWebGL();
+    </script>
+</body>
+</html>
