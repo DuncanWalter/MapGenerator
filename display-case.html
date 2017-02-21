@@ -11,7 +11,7 @@
     <!--<script src="GamePlayer.js"></script>-->
 </head>
 <body class="dark cascade">
-    <canvas id="map" class="webgl"></canvas>
+    <canvas id="map-canvas" class="webgl"></canvas>
     <!--<div class="col f1">-->
         <!--<div class="row" style="padding-top:0.65rem">-->
             <!--<p><b>The Enigmagon</b></p>-->
@@ -38,40 +38,15 @@
             <!--</div>-->
         <!--</div>-->
     <!--</div>-->
-    <script id="vertex-shader" type="sglsl">
-        attribute vec4 position;
-        uniform mat4 projection;
-        attribute float color;
-        uniform vec4 color1;
-        uniform vec4 color2;
-
-        varying vec4 pass_color;
-
-        void main() {
-            if(color == 1.0){
-                pass_color = color1;
-            } else {
-                pass_color = color2;
-            }
-            gl_Position = projection * position;
-        }
-    </script>
-    <script id="fragment-shader" type="sglsl">
-        precision mediump float;
-
-        varying vec4 pass_color;
-
-        void main() {
-            gl_FragColor = pass_color;
-        }
-    </script>
-    <script src="bundle.js"></script>
-    <script>
-        window.onload = function (){
-            document.getElementById("canvas").focus();
-        };
-//        cascade($(".cascade"));
-        runWebGL();
-    </script>
+    <script id="plain-vertex" type="sglsl" src="src/plainVertex.sglsl"></script>
+    <script id="plain-fragment" type="sglsl" src="src/plainFragment.sglsl"></script>
+    <script src="src/Main.js"></script>
+    <!--<script>-->
+        <!--window.onload = function (){-->
+            <!--document.getElementById("canvas").focus();-->
+        <!--};-->
+<!--//        cascade($(".cascade"));-->
+        <!--runWebGL();-->
+    <!--</script>-->
 </body>
 </html>

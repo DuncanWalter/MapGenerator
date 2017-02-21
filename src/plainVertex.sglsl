@@ -1,0 +1,16 @@
+attribute vec4 position;
+uniform mat4 projection;
+attribute float color;
+uniform vec4 color1;
+uniform vec4 color2;
+
+varying vec4 pass_color;
+
+void main() {
+    if(color == 1.0){
+        pass_color = color1;
+    } else {
+        pass_color = color2;
+    }
+    gl_Position = projection * position;
+}

@@ -1,4 +1,3 @@
-
 define(["src/PerlinGenerator", "src/PoissonGenerator"],
     function(PerlinGenerator, PoissonGenerator) {
         /*
@@ -20,6 +19,8 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
         */
         return function Map(settings) {
 
+            var proto = this.prototype;
+
             this.height = settings.size.height;
             this.width = settings.size.width;
             this.tiles = [];
@@ -35,12 +36,15 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
 
 
 
+            proto.getTileIndexEShift = (proto.getTileIndexEShift || function(index, distance){
 
+            });
+            proto.getTileIndexSShift = (proto.getTileIndexEShift || function(index, distance){
 
+            });
+            proto.getTileIndexBShift = (proto.getTileIndexEShift || function(index, distance){
 
-            Map.prototype.getTileIndexEShift = function(index, distance){
-
-            }
+            });
         }
     }
 );

@@ -1,8 +1,14 @@
-/**
- * Created by Duncan on 2/20/2017.
- */
+
 define(["src/Map", "src/Camera"],
     function(Map, Camera) {
+        // sets up a webgl context for the canvas
+        var canvas = document.getElementById("map-canvas");
+        var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+
+        // plainSPI : ShaderProgramInfo
+        var plainSPI = twgl.createProgramInfo(gl, ["plain-vertex", "plain-fragment"]);
+        // paperSPI : ShaderProgramInfo
+        var paperSPI = null;
 
         var map = new Map({
             elevationPerlin: {
@@ -17,7 +23,7 @@ define(["src/Map", "src/Camera"],
             }
         });
 
-        var camera = new Camera(map);
+        var camera = new Camera(gl, plainSPI, paperSPI, map);
 
         var delta = 0; // delta : (Seconds :: float)
         var now = Date.now(); // now : (POSIXTime : int)
@@ -28,7 +34,7 @@ define(["src/Map", "src/Camera"],
             now = time;
 
             //
-            camera.draw(delta);
+            camera.render(delta);
 
             // use recursion to continue rendering
             // by piggybacking on the DOM render loop
