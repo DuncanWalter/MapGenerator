@@ -28,13 +28,28 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
             // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);
 
+            // -------> this direction
             this.getTileIndexRightShift = function(index, distance){
                 return (index - (index%this.width))  +  ((index+distance) % this.width);
             };
+
+            //     \
+            //      \
+            //       \  this direction
+            //        \
             this.getTileIndexUpShift = function(index, distance){
+
+                // do a check that y is valid. If not, return null
                 // return (index - index % this.width) + ((index + distance) % this.width);
             };
+
+            //        /
+            //       /
+            //      /   this direction
+            //     /
             this.getTileIndexSlantShift = function(index, distance){
+
+                // do a check that y is valid. It not, return null
                 // return (index - index % this.width) + ((index + distance) % this.width);
             };
 
