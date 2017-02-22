@@ -10,34 +10,28 @@ define(function(){
     var head = $("head");
 
     head.append("<script id='"+vertexId+"' type='sglsl'>"
-        +"attribute vec4 position;"
-        +"attribute float color;"
-        +""
-        +"uniform mat4 projection;"
-        +"uniform vec4 color1;"
-        +"uniform vec4 color2;"
-        +""
-        +"varying vec4 pass_color;"
-        +""
-        +"void main() {"
-        +"    if(color == 1.0) {"
-        +"        pass_color = color1;"
-        +"    } else {"
-        +"        pass_color = color2;"
-        +"    }"
-        +"    gl_Position = projection * position;"
-        +"}"
-        +"</script>");
+        +"\n attribute vec3 position;"
+        +"\n attribute vec3 color;"
+        +"\n "
+        +"\n uniform mat4 projection;"
+        +"\n "
+        +"\n varying vec3 pass_color;"
+        +"\n "
+        +"\n void main() {"
+        +"\n     pass_color = color;"
+        +"\n     gl_Position = projection * vec4(position, 1.0);"
+        +"\n }"
+        +"\n </script>");
 
     head.append("<script id='"+fragmentId+"' type='sglsl'>"
-        +"precision mediump float;"
-        +""
-        +"varying vec4 pass_color;"
-        +""
-        +"void main(){"
-        +"    gl_FragColor = pass_color;"
-        +"}"
-        +"</script>");
+        +"\n precision mediump float;"
+        +"\n "
+        +"\n varying vec3 pass_color;"
+        +"\n "
+        +"\n void main(){"
+        +"\n     gl_FragColor = vec4(pass_color, 1.0);"
+        +"\n }"
+        +"\n </script>");
 
     return {vertex: vertexId, fragment: fragmentId}; // : {vertex: (ScriptId :: String), fragment: (ScriptId :: String)}
 });

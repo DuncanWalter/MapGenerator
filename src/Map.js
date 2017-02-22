@@ -25,10 +25,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
             this.width = settings.size.width;
             this.tiles = [];
             for(var i = 0; i < this.height; i++){
-                this.tiles[i] = [];
-                for(var j = 0; j < this.width; j++){
-                    this.tiles[i][j] = null;
-                }
+                this.tiles[i] = new Array(this.width);
             }
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);

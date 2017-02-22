@@ -4,8 +4,15 @@
 
 define(function PoissonGenerator(){
     var proto = PoissonGenerator.prototype;
-    proto.generate = (proto.generate || function(size, settings){
 
-    });
+    /*
+    generate :: (size: SizeSettings, settings: (PoissonSettings :: {
+    })) -> (Point[] :: {x: float, y: float}[])
+    */
+    this.generate = function(size, settings){
+
+
+
+    };
 });
 
