@@ -1,14 +1,20 @@
 
-define(["src/Map", "src/Camera"],
-    function(Map, Camera) {
+require(["src/Map", "src/Camera", "src/plainShaders.js"],
+    function(Map, Camera, plainShaders) {
         // sets up a webgl context for the canvas
         var canvas = document.getElementById("map-canvas");
         var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
         // plainSPI : ShaderProgramInfo
-        var plainSPI = twgl.createProgramInfo(gl, ["plain-vertex", "plain-fragment"]);
+        var plainSPI = twgl.createProgramInfo(gl, [plainShaders.vertex, plainShaders.fragment]);
         // paperSPI : ShaderProgramInfo
         var paperSPI = null;
+
+        console.dir(document.getElementById("plain-vertex"));
+
+        setTimeout(function(){
+            twgl.createProgramInfo(gl, ["plain-vertex","plain-fragment"]);
+        }, 5000);
 
         var map = new Map({
             elevationPerlin: {

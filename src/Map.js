@@ -19,7 +19,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
         */
         return function Map(settings) {
 
-            var proto = this.prototype;
+            var proto = Map.prototype;
 
             this.height = settings.size.height;
             this.width = settings.size.width;
@@ -31,13 +31,11 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
                 }
             }
 
-            var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
-            var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);
-
-
+            // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
+            // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);
 
             proto.getTileIndexEShift = (proto.getTileIndexEShift || function(index, distance){
-
+                console.log("we got it");
             });
             proto.getTileIndexSShift = (proto.getTileIndexEShift || function(index, distance){
 
