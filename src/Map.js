@@ -9,7 +9,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
             elevationPerlin: PerlinSettings,
             continentPoisson: PoissonSettings,
         }) -> {
-            tiles: Tile[][],
+            tiles: Tile[],
             height: int,
             width: int,
             getTileIndex//NAMING?//: (index: MapIndex, distance: int) -> MapIndex,
@@ -23,23 +23,21 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
 
             this.height = settings.size.height;
             this.width = settings.size.width;
-            this.tiles = [];
-            for(var i = 0; i < this.height; i++){
-                this.tiles[i] = new Array(this.width);
-            }
+            this.tiles = new Array(this.width * this.height);
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
             // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);
 
-            proto.getTileIndexEShift = (proto.getTileIndexEShift || function(index, distance){
-                console.log("we got it");
-            });
-            proto.getTileIndexSShift = (proto.getTileIndexEShift || function(index, distance){
+            this.getTileIndexRightShift = function(index, distance){
+                return (index - (index%this.width))  +  ((index+distance) % this.width);
+            };
+            this.getTileIndexUpShift = function(index, distance){
+                // return (index - index % this.width) + ((index + distance) % this.width);
+            };
+            this.getTileIndexSlantShift = function(index, distance){
+                // return (index - index % this.width) + ((index + distance) % this.width);
+            };
 
-            });
-            proto.getTileIndexBShift = (proto.getTileIndexEShift || function(index, distance){
-
-            });
         }
     }
 );

@@ -10,9 +10,11 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
 
             var proto = Camera.prototype;
 
-            var positions;
-            var vertexColors;
-            var buffers;
+            var buffers = {
+                positions: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
+                colors:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
+                indices:   {drawType: gl.DYNAMIC_DRAW, data: new Int32Array(0)}
+            };
             var bufferInfo;
 
             var input = {
@@ -47,6 +49,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
                 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 // sets the background color for blending
                 gl.enable(gl.DEPTH_TEST);
+                gl.enable(gl.CULL_FACE);
                 // enables the alpha channel- slightly diminishes the effect
                 // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
                 // gl.enable(gl.BLEND);
@@ -54,19 +57,25 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
 
-                positions = Float32Array.of(-0.9,0.9,0,0.9,0.9,0);
-                vertexColors = Float32Array.of(1,1,0,0,1,1);
-                buffers = {
-                    position: {data: positions, numComponents: 3, drawType: gl.DYNAMIC_DRAW},
-                    color: {data: vertexColors, numComponents: 3}
-                };
+                // positions = Float32Array.of(-0.9,0.9,0,0.9,0.9,0);
+                // vertexColors = Float32Array.of(1,1,0,0,1,1);
+                // buffers = {
+                //     position: {data: positions, numComponents: 3, drawType: gl.DYNAMIC_DRAW},
+                //     color: {data: vertexColors, numComponents: 3}
+                // };
+
+                var indexOffset = 0;
+                map.tiles.forEach(function(tile){
+                    // read in the tile meshes and colors
+                });
+                // TODO splice off the ends of the buffer arrays if needed
                 bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
 
                 twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.color, vertexColors);
                 twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.position, positions);
                 // establish shader uniforms
                 var uniforms = {
-                    projection: twgl.m4.identity() // actually calculated bellow
+                    projection: twgl.m4.identity() // actually calculated below
                 };
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
                 twgl.m4.ortho(-aspect, aspect, 1, -1, -1, 1, uniforms.projection);
