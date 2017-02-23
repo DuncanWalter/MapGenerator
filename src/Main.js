@@ -1,5 +1,5 @@
 
-require(["src/Map", "src/Camera", "src/plainShaders.js"],
+require(["src/Map", "src/Camera", "src/plainShaders"],
     function(Map, Camera, plainShaders) {
         // sets up a webgl context for the canvas
         var canvas = document.getElementById("map-canvas");
