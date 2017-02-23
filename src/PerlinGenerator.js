@@ -7,22 +7,18 @@ define(["src/PoissonGenerator"],
 
     /*
      PerlinGenerator :: () -> {
-        generate :: (size: sizeSettings,
-                     settings: (PerlinSettings :: {
-                        octaveSizes: float[] | 0 < float,
-                        octaveWeights: float[],
-                        centrality: float
-        })) -> {
-            determinePerlinForPoint :: (point: Point) -> float | -1 < float < 1
-            }
+        generate
      }
      */
-
     return function PerlinGenerator() {
 
         /*
-
-         }
+         generate :: (size: sizeSettings,
+                      settings: (PerlinSettings :: {
+                        octaveSizes: float[] | 0 < float,
+                        octaveWeights: float[],
+                        centrality: float
+         })) -> determinePerlinForPoint
          */
         this.generate = function(size, settings) {
 
@@ -50,6 +46,9 @@ define(["src/PoissonGenerator"],
             }
             // we now have the poisson points with perlin values for each of the octaves
 
+            /*
+              determinePerlinForPoint :: (point: Point) -> float | -1 < float < 1
+             */
             return function determinePerlinForPoint(point) {
 
                 var perlin = 0;
@@ -71,41 +70,17 @@ define(["src/PoissonGenerator"],
                         perlinForOctave /= neighborhoodOfPoint.length; // find average
                     } else { // if there are more than 3 points, find the closest three
 
-                        var pointsSortedByDistance = [];
-                        var left;
-                        var right;
-                        var mid;
-                        var currentPoint;
-                        var distance; // distance between current point and point
-                        for(var k = 0; k < neighborhoodOfPoint.length; k++) { // step linearly through
-                            currentPoint = neighborhoodOfPoint[k];
-                            distance = Math.min( Math.pow(point.x - currentPoint.x, 2) , Math.pow(point.x + size.width - currentPoint.x, 2) ) // calculate distance between x coords (accounting for wrap
+                        // calculate the distance between each point and point
+                        neighborhoodOfPoint.forEach( function(currentPoint){
+                            currentPoint.distance = Math.min( Math.pow(point.x - currentPoint.x, 2) , Math.pow(point.x + size.width - currentPoint.x, 2) ) // calculate distance between x coords (accounting for wrap
                                 + Math.pow(point.y - currentPoint.y, 2); // calculate distance between y coords
-
-
-                            // TODO consolidate all of these binary searches into one function
-                            // Use a binary search to insert the point in the correct spot
-                            left = 0;
-                            right = pointsSortedByDistance.length;
-                            mid = 0; // just to ensure that nothing goes wrong if the array is empty
-                            while(left < right) {
-                                mid = Math.floor( (-left + right ) / 2);
-                                if (distance == pointsSortedByDistance[mid].distance) {
-                                    break; // the point matches
-                                } else if (distance < pointsSortedByDistance[mid].distance) {
-                                    right = mid;
-                                } else {
-                                    left = mid;
-                                }
-                            }
-                            // mid is now the index of where to add the point
-                            pointsSortedByDistance.splice(mid, 0, {distance: distance, perlin: currentPoint.perlin}); // insert the point
-                        }
+                        });
+                        // sort all points by distance
+                        neighborhoodOfPoint.sort(function(point1, point2) {
+                            return point1.distance - point2.distance;
+                        });
                         // the points are now all sorted by distance
-                        for (var l = 0; l < 3; l++) {
-                            perlinForOctave += pointsSortedByDistance[l].perlin; // sum of perlin values
-                        }
-                        perlinForOctave /= 3; // take average
+                        perlinForOctave = (neighborhoodOfPoint[0] + neighborhoodOfPoint[1] + neighborhoodOfPoint[2])/3; // take average
 
                     }
                     // determine perlin value from octave
