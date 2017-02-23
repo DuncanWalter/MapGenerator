@@ -1,5 +1,5 @@
-define(["src/PerlinGenerator", "src/PoissonGenerator"],
-    function(PerlinGenerator, PoissonGenerator) {
+define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
+    function(PerlinGenerator, PoissonGenerator, Tile) {
         /*
         Map :: ({
             size: (SizeSettings :: {
@@ -24,6 +24,9 @@ define(["src/PerlinGenerator", "src/PoissonGenerator"],
             this.height = settings.size.height;
             this.width = settings.size.width;
             this.tiles = new Array(this.width * this.height);
+            for(var i = 0; i< this.tiles.length; i++){
+                this.tiles[i] = new Tile(i, Math.round(6*Math.random()), Math.round(4 + Math.random()));
+            }
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
             // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);

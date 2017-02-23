@@ -10,16 +10,18 @@ define(function(){
     var head = $("head");
 
     head.append("<script id='"+vertexId+"' type='sglsl'>"
-        +"\n attribute vec3 position;"
-        +"\n attribute vec3 color;"
+        +"\n attribute vec3 positions;"
+        +"\n attribute vec3 colors;"
+        +"\n attribute vec2 offsets;"
+        +"\n "
         +"\n "
         +"\n uniform mat4 projection;"
         +"\n "
         +"\n varying vec3 pass_color;"
         +"\n "
         +"\n void main() {"
-        +"\n     pass_color = color;"
-        +"\n     gl_Position = projection * vec4(position, 1.0);"
+        +"\n     pass_color = colors;"
+        +"\n     gl_Position = projection * vec4(positions + vec3(offsets, 0.0), 1.0);"
         +"\n }"
         +"\n </script>");
 

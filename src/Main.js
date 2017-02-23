@@ -13,7 +13,7 @@ require(["src/Map", "src/Camera", "src/plainShaders.js"],
         console.dir(document.getElementById("plain-vertex"));
 
         setTimeout(function(){
-            twgl.createProgramInfo(gl, ["plain-vertex","plain-fragment"]);
+            twgl.createProgramInfo(gl, ["plain-vertex", "plain-fragment"]);
         }, 5000);
 
         var map = new Map({
@@ -24,8 +24,8 @@ require(["src/Map", "src/Camera", "src/plainShaders.js"],
 
             },
             size: {
-                width: 78,
-                height: 32
+                width: 5,
+                height: 5
             }
         });
 
