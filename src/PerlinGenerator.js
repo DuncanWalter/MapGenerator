@@ -2,8 +2,8 @@
  * Created by Duncan on 2/19/2017.
  */
 
-define(["src/PoissonGenerator"],
-    function(PoissonGenerator){
+define(["src/PoissonGenerator", "src/Map"],
+    function(PoissonGenerator, Map){
 
     /*
      PerlinGenerator :: () -> {
@@ -60,7 +60,7 @@ define(["src/PoissonGenerator"],
                     perlinForOctave = 0;
 
                     // get all points within 3 times the octaveSize (which was the minRadius between poisson points)
-                    neighborhoodOfPoint = PoissonGenerator.getNeighborhoodOfPoint(point, settings.octaveSizes[i] * 3, poissonOctaves[i]);
+                    neighborhoodOfPoint = Map.getNeighborhoodOfPoint(point, settings.octaveSizes[i] * 3, poissonOctaves[i]);
 
                     // if the neighborhood contains 3 or fewer points, take the average of all points
                     if (neighborhoodOfPoint.length <= 3) {
