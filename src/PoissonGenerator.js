@@ -2,17 +2,26 @@
  * Created by Duncan on 2/20/2017.
  */
 
-define(function (){
+define(["src/Utils", "src/Map"],
+    function (Utils, Map){
 
-     function PoissonGenerator() {
+     /*
+      PoissonGenerator :: () -> {
+         generate
+      }
+     */
+     return function PoissonGenerator() {
 
         /*
          generate :: (size: SizeSettings,
-         settings: (PoissonSettings :: {
-         minRadius: float
-         maxRadius: float | minRadius < maxRadius
-         nodeDensity: int
+                      settings: (PoissonSettings :: {
+                        minRadius: float
+                        maxRadius: float | minRadius < maxRadius
+                        nodeDensity: int
          })) -> (Point[] :: {x: float, y: float}[])
+
+         Takes in several settings <TODO: define later!>
+         and produces a list of random points which have float x and y coordinates with approximately equal spacing
          */
         this.generate = function (size, settings) {
 
@@ -57,7 +66,7 @@ define(function (){
             function checkZone(point) {
                 // scans the dormant list to see if there is already a point in this region
 
-                // var neighborhoodOfDormantNodes = this.getNeighborhoodOfPoint(point, minRadius, dormantNodes);
+                // var neighborhoodOfDormantNodes = Map.getNeighborhoodOfPoint(point, minRadius, dormantNodes);
                 // for (var i = 0; i < neighborhoodOfDormantNodes.length; i++) {
                 for (var i = 0; i < dormantNodes; i++) { // cycle over the whole array
                     // check to see if the points are close
@@ -70,6 +79,10 @@ define(function (){
 
                 }
                 return true; // no dormant point was nearby
+
+                // NEW VERSION:
+                // var neighborhoodOfDormantNodes = Map.getNeighborhoodOfPoint(point, minRadius, dormantNodes);
+                // return (neighborhoodOfDormantNodes.length == 0); // return true if there are no points in the neighborhood
             }
 
             /*
@@ -92,6 +105,61 @@ define(function (){
                         i--; // decrement, since the activeNode length just decremented
                     }
                 }
+
+
+                // NEW VERSION:
+                // /*
+                //  sortByXValue :: (point1: Point, point2: Point) -> float
+                //
+                //  returns whether point1 has a x coord greater than (>0), equal to (==0), or less than (<0) point2 does
+                //  */
+                // function sortByXValue(point1, point2) {
+                //     return point1.x - point2.x;
+                // }
+                // // do a binary search to find the minimum and maximum x values
+                // var minX = Utils.binarySearch(activeNodes, {x: point.x - minRadius}, sortByXValue);
+                // var maxX = Utils.binarySearch(activeNodes, {x: point.x + minRadius}, sortByXValue);
+                // var nearbyNodes = activeNodes.slice(minX, maxX + 1); // make a copy of all nodes nearby to point
+                // var maxDistance = Math.pow(minRadius, 2);
+                // var notTooClose = nearbyNodes.filter(function(currentPoint) { // filter out all the points that are not close
+                //     if ( (point.y - radius >= currentPoint.y) && (point.y + radius <= currentPoint.y)) { // check to see if the y value is close
+                //         return Math.pow(currentPoint.x - point.x, 2) + Math.pow(currentPoint.y - point.y, 2) > maxDistance; // check to see if distance is not within radius
+                //     }
+                //     return true; // if the y value is not close, the point is fine
+                // });
+                // // concat the array of all points with x values smaller than minX with the notTooClose points with the points with x values larger than maxX
+                // activeNodes = activeNodes.slice(0, minX).concat(notTooClose, activeNodes.slice(maxX - 1, activeNodes.length) );
+
+
+                // NEW NEW VERSION (Which uses Map.getNeighborhoodOfPoint)
+                // // Add an index to each point in the activeNodes
+                // var index = 0;
+                // activeNodes.forEach(function(currentPoint) {
+                //     currentPoint.index = index;
+                //     index++;
+                // });
+                // var neighborhood = Map.getNeighborhoodOfPoint(point, minRadius, activeNodes); // get the neighborhood of the point
+                // var neighborhoodLength = neighborhood.length;
+                // for (var i = neighborhoodLength; i <= 0; i--) { // cycle backwards (backwards to ensure the indices don't change for lower values) through the neighborhood
+                //     activeNodes.splice(neighborhood[i].index, 1); // remove each element of activeNodes which is in the neighborhood
+                // }
+
+                // ON THIRD THOUGHT VERSION
+                // /*
+                //   sortByXValue :: (point1: Point, point2: Point) -> float
+                //
+                //   returns whether point1 has a x coord greater than (>0), equal to (==0), or less than (<0) point2 does
+                //   */
+                // function sortByXValue(point1, point2) {
+                //     return point1.x - point2.x;
+                // }
+                // var neighborhood = Map.getNeighborhoodOfPoint(point, minRadius, activeNodes); // get the neighborhood of the point
+                // var neighborhoodLength = neighborhood.length;
+                // var index;
+                // for (var i = 0; i < neighborhoodLength; i++) {
+                //     index = Utils.binarySearch(activeNodes, neighborhood[i], sortByXValue); // find the index of the point which is in the neighborhood
+                //     activeNodes.splice(index, 1); // remove the point from the activeNodes
+                // }
             }
 
             /*
@@ -144,30 +212,21 @@ define(function (){
             }
 
             /*
-             sortPoints :: (point1: Point, point2: Point) -> -1, 0, or 1
+             sortPoints :: (point1: Point, point2: Point) -> float
 
              sorts two points by x coordinate, then y coordinate
-             returns -1 if point1 is "less" than point2
-             returns 0 if the points have the same x and y coordinates
-             returns 1 if point1 is "more" than point2
+             returns (<0) if point1 is "less" than point2
+             returns (==0) if the points have the same x and y coordinates
+             returns (>0) if point1 is "more" than point2
              */
             function sortPoints(point1, point2) {
-
                 var xDistance = point1.x - point2.x;
                 var yDistance = point1.y - point2.y;
 
                 if (xDistance == 0) {
-                    if (yDistance == 0) {
-                        return 0; // x and y values match
-                    } else if (yDistance < 0) {
-                        return -1; // y value of point1 is less
-                    } else {
-                        return 1; // y value of point1 is more
-                    }
-                } else if (xDistance < 0) {
-                    return -1; // x value of point1 is less
+                    return yDistance; // yDistance is signed value for whether y value is greater (and 0 if equal!)
                 } else {
-                    return 1; // x value of point1 is more
+                    return xDistance; // xDistance is signed value for whether x value is greater
                 }
             }
 
@@ -177,90 +236,14 @@ define(function (){
              performs a binary search to figure out where to put point and inserts point in array
              */
             function addPointToSortedArray(point, array) {
-
                 // perform a binary search to find the spot to add the point
-                var left = 0;
-                var right = array.length;
-                var mid = 0;
-                var equivalence;
-                while (left < right) {
-                    mid = Math.floor((left + right) / 2);
-                    equivalence = sortPoints(point, array[mid]);
-                    if (equivalence == 0) {
-                        break; // the points are equivalent, so mid is already correct
-                    } else if (equivalence < -1) {
-                        right = mid; // if point is less than the checking point, set right = mid
-                    } else {
-                        left = mid; // if point is more than the checking point, set left = mid
-                    }
-                }
-                // mid now corresponds to the place to put the point
-                array.splice(mid, 0, point); // add the new point to the correct spot
-
+                var index = Utils.binarySearch(array, point, sortPoints);
+                // index now corresponds to the place to put the point
+                array.splice(index, 0, point); // add the new point to the correct spot
             }
         };
 
-    }
-
-    /*
-     getNeighborhoodOfPoint :: (point: Point, array: Point[]) -> Point[]
-
-     returns a sorted array of all points in the square region with "radius" radius around point
-     this does not affect the original array
-
-     // TODO redo this to consider the wrapping of x values!
-
-     // TODO make this a circular region?
-     */
-    PoissonGenerator.prototype.getNeighborhoodOfPoint = function(point, radius, array) {
-        // perform a binary search to find the minimum x value (point.x - radius)
-        var tempArray = array.slice(0, array.length); // make a copy of array to modify
-        var left = 0;
-        var right = array.length;
-        var mid = 0; // just to ensure that nothing goes wrong if the tempArray is empty
-        while (left < right) {
-            mid = Math.floor((left + right) / 2);
-            if ((point.x - radius) == array[mid].x) {
-                break; // the x values match
-            } else if ((point.x - radius) < array[mid].x) {
-                right = mid; // desired minimum x is to the left of mid
-            } else {
-                left = mid; // desired minimum x is to the right of mid
-            }
-        }
-        // mid now corresponds to the minimum x value
-        tempArray.splice(0, mid); // remove the first mid values from the tempArray
-        // do the binary search again to find the maximum x value (point.x + radius)
-        left = 0;
-        right = tempArray.length;
-        mid = 0; // just to ensure that nothing goes wrong if the tempArray is empty
-        while (left < right) {
-            mid = Math.floor((left + right) / 2);
-            if ((point.x + radius) == array[mid].x) {
-                break; // the x values match
-            } else if ((point.x + radius) < array[mid].x) {
-                right = mid; // desired maximum x is to the left of mid
-            } else {
-                left = mid; // desired minimum x is to the right of mid
-            }
-        }
-        // mid now corresponds to the maximum x value
-        tempArray.splice(mid, tempArray.length - mid); // remove all elements after mid
-
-        // tempArray now is an array of all points with x values near point
-        // sadly, we cannot do a binary search on y, since we aren't guaranteed any ordering of y-values
-        for (var i = 0; i < tempArray.length; i++) {
-            if ((point.y - radius <= tempArray[i].y) || (point.y + radius >= tempArray[i].y)) {
-                tempArray.splice(i, 1); // if the y value is not close, remove it from the list
-                i--; // decrement i, so as to not skip any elements
-            }
-        }
-
-        // tempArray is now a sorted array of all points with x and y values within radius from point
-        return tempArray;
     };
-
-    return PoissonGenerator;
 
 
 });

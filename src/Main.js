@@ -1,4 +1,14 @@
 
+// TODO split Utils into separate definitions for modularity
+// TODO utilize the require js optimizer
+// TODO use an indexed draw for better efficiency
+// TODO attempt to reuse buffers and work off of buffer views for better efficiency
+// TODO redo noise generator naming and class schemes to reflect new functional format
+// TODO finish implementing the new functional format of the noise generators
+// TODO implement the new Continent generator
+// TODO offload the main render call from the camera to Main + Map
+// TODO implement camera input responsiveness
+
 require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders"],
     function(twgl, Map, Camera, plainShaders) {
         // sets up a webgl context for the canvas

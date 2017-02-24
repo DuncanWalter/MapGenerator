@@ -1,5 +1,6 @@
-define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
-    function(PerlinGenerator, PoissonGenerator, Tile) {
+
+define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile", "src/Utils"],
+    function(PerlinGenerator, PoissonGenerator, Tile, Utils) {
         /*
         Map :: ({
             size: (SizeSettings :: {
@@ -32,15 +33,15 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
             // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);
 
             // -------> this direction
-            this.getTileIndexRightShift = function(index, distance){
-                return (index - (index%this.width))  +  ((index+distance) % this.width);
+            this.getTileIndexRightShift = function (index, distance) {
+                return (index - (index % this.width)) + ((index + distance) % this.width);
             };
 
             //     \
             //      \
             //       \  this direction
             //        \
-            this.getTileIndexUpShift = function(index, distance){
+            this.getTileIndexUpShift = function (index, distance) {
 
                 // do a check that y is valid. If not, return null
                 // return (index - index % this.width) + ((index + distance) % this.width);
@@ -50,10 +51,76 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
             //       /
             //      /   this direction
             //     /
-            this.getTileIndexSlantShift = function(index, distance){
+            this.getTileIndexSlantShift = function (index, distance) {
 
                 // do a check that y is valid. It not, return null
                 // return (index - index % this.width) + ((index + distance) % this.width);
+            };
+
+            /*
+             getNeighborhoodOfPoint :: (point: Point, radius: float, array: Point[]) -> Point[]
+
+             returns a sorted array of all points in the circular region within radius around point
+             this does not affect the original array
+
+             */
+            this.getNeighborhoodOfPoint = function (point, radius, array) {
+
+                /*
+                 sortByXValue :: (point1: Point, point2: Point) -> float
+
+                 returns whether point1 has a x coord greater than (>0), equal to (==0), or less than (<0) point2 does
+                 */
+                function sortByXValue(point1, point2) {
+                    return point1.x - point2.x;
+                }
+
+                var worldWidth = this.width; // grab the width of the world as a local variable so that it can be used in non-lexical calls here
+                var index;
+                var tempArray;
+                // First, we must check to see if our neighborhood is affected by the wrapping of the world
+                if (point.x < radius) {
+                    // the point has a very low x coordinate, so there will be some fraction of the neighborhood on the right of the world
+
+                    // perform a binary search to find the "maximum" x value (point.x + radius)
+                    index = Utils.binarySearch(array, {x: point.x + radius}, sortByXValue);
+                    tempArray = array.slice(0, index + 1);
+                    // perform a binary search to find the "minimum" x value (point.x + worldWidth - radius)
+                    index = Utils.binarySearch(array, {x: point.x + worldWidth - radius}, sortByXValue);
+                    tempArray = tempArray.concat(array.slice(index, array.length)); // append the points which are separated by wrap
+                } else if ( (point.x + radius) > worldWidth) {
+                    // the point has a very high x coordinate, so there will be some fraction of the neighborhood on the left of the world
+
+                    // perform a binary search to find the "maximum" x value (point.x + radius - worldWidth)
+                    index = Utils.binarySearch(array, {x: point.x + radius - worldWidth}, sortByXValue);
+                    tempArray = array.slice(0, index + 1);
+                    // perform a binary search to find the "minimum" x value (point.x - radius)
+                    index = Utils.binarySearch(array, {x: point.x - radius}, sortByXValue);
+                    tempArray = tempArray.concat(array.slice(index, array.length)); // append the points which are separated by wrap
+                } else {
+                    // we do not need to be concerned with wrapping, yay!
+
+                    // perform a binary search to find the minimum x value (point.x - radius)
+                    index = Utils.binarySearch(array, {x: point.x - radius}, sortByXValue);
+                    // do the binary search again to find the maximum x value (point.x + radius)
+                    var highIndex = Utils.binarySearch(array, {x: point.x + radius}, sortByXValue);
+                    tempArray = array.slice(index, highIndex + 1); // copy all points with x value between the minimum and maximum into a new array
+                }
+
+                // tempArray now is an array of all points with x values near point
+                // Now we do a linear evaluation of all points. First we check the y value to see if it is close. Is so, then we check the actual distance
+                var distance;
+                var maxDistance = Math.pow(radius, 2);
+
+                return tempArray.filter(function (currentPoint) { // filter out all the points that are not close and return the sorted list of those that are close
+                    if ((point.y - radius >= currentPoint.y) && (point.y + radius <= currentPoint.y)) { // check to see if the y value is close
+                        distance = Math.min( Math.pow(point.x - currentPoint.x, 2) , Math.pow(point.x + worldWidth - currentPoint.x, 2) ) // calculate distance between x coords (accounting for wrap)
+                            + Math.pow(point.y - currentPoint.y, 2); // calculate distance between y coords
+                        return distance <= maxDistance; // check to see if distance is not within radius
+                    }
+                    return false; // if the y value is not close, the point is not close enough
+                });
+
             };
 
         }
