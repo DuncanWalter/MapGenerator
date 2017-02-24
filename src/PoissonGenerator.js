@@ -25,7 +25,7 @@ define(["src/Utils", "src/Map"],
          */
         this.generate = function (size, settings) {
 
-            // ensure that the nodeSpacing is set (default to 4.5)
+            // ensure that the nodeSpacing is set (default to 4.5) TODO scale defaults based on size for better default effect
             var minRadius = settings.minRadius || 4.5;
             // ensure that the nodeVariance is set (default to minRadius + 1.0)
             var maxRadius = settings.maxRadius || (minRadius + 1.0);
@@ -170,6 +170,13 @@ define(["src/Utils", "src/Map"],
              */
             function checkDistance(point1, point2) {
 
+
+                // var a = Math.abs(point1.x-point2.x);
+                // if(Math.min(size.width-a, a) < minRadius){
+                //     a less verbose way of catching x wrapping
+                // }
+
+
                 if (Math.abs(point1.y - point2.y) <= minRadius) { // check to see if the y coords are close
                     // check for x without wrap
                     if (Math.abs(point1.x - point2.x) <= minRadius) {
@@ -178,6 +185,7 @@ define(["src/Utils", "src/Map"],
 
                     }
                     // check for x with wrap
+                    // TODO I think this breaks if point2.x > point1.x
                     if (Math.abs(point1.x - (point2.x + size.width)) <= minRadius) {
                         // actually check with a circle
                         return (Math.pow(point1.x - (point2.x + size.width), 2) + Math.pow(point1.y - point2.y, 2) <= minRadius);
@@ -199,7 +207,7 @@ define(["src/Utils", "src/Map"],
                 for (var i = 0; i < nodeDensity; i++) {
                     randomAngle = Math.random() * 2 * Math.PI; // pick a random angle (0, 2pi)
                     randomDistance = minRadius + Math.random() * (maxRadius - minRadius); // pick a random distance between max and min
-                    // TODO fix the randomDistance to unbias toward small radii
+                    // TODO fix the randomDistance to unbias toward small radii (should use Math.pow(Math.random,1/(2 - min/max)) I think....)
                     // randomDistance = minRadius + (Math.abs(Math.random() - Math.random()) * (maxRadius - minRadius);
                     newX = (point.x + Math.cos(randomAngle) * randomDistance) % size.width;
                     newY = point.y + Math.sin(randomAngle) * randomDistance;
@@ -247,4 +255,5 @@ define(["src/Utils", "src/Map"],
 
 
 });
+
 

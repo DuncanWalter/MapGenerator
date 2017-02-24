@@ -6,14 +6,14 @@ define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile
 
          }
          */
-        // TODO redefine this to take a render function, a map, and some camera settings
+        // TODO redefine this to take a map, and some camera settings. get rendering out of here
         return function Camera(gl, plainSPI, paperSPI, map) {
 
             // var proto = Camera.prototype;
 
-            var indices;
-            var colors;
-            var positions;
+            var indices = new Uint8Array(0);
+            var colors = new Float32Array(0);
+            var positions = new Float32Array(0);
 
             console.dir(Tile.mesh);
 
@@ -21,8 +21,7 @@ define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile
             var buffers = {
                 positions: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
                 colors:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
-                // offsets:   {numComponents: 2},
-                // indices:   {}
+                // indices:   {drawType: gl.DYNAMIC_DRAW, data: new Uint8Array(0)}
             };
             var bufferInfo;
             bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
@@ -60,27 +59,25 @@ define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile
                 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 // sets the background color for blending
                 gl.enable(gl.DEPTH_TEST);
-                // gl.enable(gl.CULL_FACE);
-                // enables the alpha channel- slightly diminishes the effect
+                // enables the alpha channel
                 // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
                 // gl.enable(gl.BLEND);
                 gl.clearColor(0.48,0.53,0.67,1);
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
-                // positions = Float32Array.of(-0.9,0.9,0,0.9,0.9,0);
-                // vertexColors = Float32Array.of(1,1,0,0,1,1);
-                // buffers = {
-                //     position: {data: positions, numComponents: 3, drawType: gl.DYNAMIC_DRAW},
-                //     color: {data: vertexColors, numComponents: 3}
-                // };
-
                 var maxdex = 0;
                 map.tiles.forEach(function(tile){
                     maxdex += tile.indices.length;
                 });
-                // indices = new Uint8Array(maxdex);
-                positions = new Float32Array(maxdex * 8);
-                colors = new Float32Array(maxdex * 12);
+
+
+                // only create new buffers if they are too small. Otherwise slice them up
+                if(positions.buffer.byteLength < maxdex*8){
+                    // indices = new Uint8Array(maxdex);
+                    positions = new Float32Array(maxdex * 8);
+                    colors = new Float32Array(maxdex * 12);
+                }
+
                 var index = 0;
                 map.tiles.forEach(function(tile){
                     var yOffset = Math.floor(tile.index/map.width) * 1.5;
@@ -93,7 +90,6 @@ define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile
                         positions[index++] = Tile.mesh[i][1] + yOffset;
                         colors[index] = tile.color[2];
                         positions[index++] = Tile.mesh[i][2];
-
 
                     });
                 });
@@ -115,6 +111,7 @@ define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile
                 // establish shader uniforms
                 var uniforms = {
                     projection: twgl.m4.identity() // actually calculated below
+                    // camera: [map.width / 2 * Math.sqrt(3), map.height * 3 / 4, -1] // for the eventual paper shader
                 };
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
                 twgl.m4.ortho(-aspect*map.height, aspect*map.height, map.height, -map.height, -1, 1, uniforms.projection);

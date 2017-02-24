@@ -10,6 +10,11 @@ define(["src/PoissonGenerator", "src/Map"],
         generate
      }
      */
+    // TODO call this PerlinAt? Get rid of the generator call?
+    // new syntax would be:
+    // var perlinAt = new PerlinAt(size, settings);
+    // var newPerlinVal = perlinAt(point);
+    // TODO this new syntax would follow a much tighter naming and type structure
     return function PerlinGenerator() {
 
         /*
@@ -47,8 +52,9 @@ define(["src/PoissonGenerator", "src/Map"],
             // we now have the poisson points with perlin values for each of the octaves
 
             /*
-              determinePerlinForPoint :: (point: Point) -> float | -1 < float < 1
+              determinePerlinForPoint :: (point: Point) -> (PerlinValue :: float | -1 < float < 1)
              */
+            // TODO call this perlinAt()? See above for full proposed spec
             return function determinePerlinForPoint(point) {
 
                 var perlin = 0;

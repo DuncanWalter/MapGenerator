@@ -20,13 +20,11 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile", "src/Utils"],
         */
         return function Map(settings) {
 
-            var proto = Map.prototype;
-
             this.height = settings.size.height;
             this.width = settings.size.width;
             this.tiles = new Array(this.width * this.height);
             for(var i = 0; i< this.tiles.length; i++){
-                this.tiles[i] = new Tile(i, Math.round(6*Math.random()), Math.round(4 + Math.random()));
+                this.tiles[i] = new Tile(i, Math.round(3*Math.random()+4*i/this.tiles.length), Math.round(4 + Math.random()));
             }
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
@@ -41,7 +39,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile", "src/Utils"],
             //      \
             //       \  this direction
             //        \
-            this.getTileIndexUpShift = function (index, distance) {
+            this.getTileIndexDownShift = function (index, distance) {
 
                 // do a check that y is valid. If not, return null
                 // return (index - index % this.width) + ((index + distance) % this.width);
@@ -58,6 +56,9 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile", "src/Utils"],
             };
 
             /*
+             TODO so I was stupid earlier, and forgot that this can be completely defined with just size, which our
+             generators have... so this should no longer be defined here. My bad -SL4M
+
              getNeighborhoodOfPoint :: (point: Point, radius: float, array: Point[]) -> Point[]
 
              returns a sorted array of all points in the circular region within radius around point
