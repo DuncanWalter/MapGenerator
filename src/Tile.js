@@ -111,13 +111,13 @@ define(function(){
     // tiles have a uniform mesh available for rendering
     var rt3 = Math.pow(3, 0.5);
     Tile.mesh = Tile.prototype.mesh = [
-        0, 1, 0,
-        rt3/2, 0.5, 0,
-        rt3/2, -0.5, 0,
-        0, -1, 0,
-        -rt3/2, -0.5, 0,
-        -rt3/2, 0.5, 0,
-        0, 0, 0.6
+        [0, 1, 0],
+        [rt3/2, 0.5, 0],
+        [rt3/2, -0.5, 0],
+        [0, -1, 0],
+        [-rt3/2, -0.5, 0],
+        [-rt3/2, 0.5, 0],
+        [0, 0, 0.6]
     ];
 
     return Tile;

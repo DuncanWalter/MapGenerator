@@ -7,6 +7,8 @@ define(function(){
     var vertexId = "plain-vertex"; // vertexId: (ScriptId :: String)
     var fragmentId = "plain-fragment"; // fragmentId: (ScriptId :: String)
 
+    console.dir($);
+
     var head = $("head");
 
     head.append("<script id='"+vertexId+"' type='sglsl'>"

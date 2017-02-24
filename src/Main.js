@@ -1,6 +1,6 @@
 
-require(["src/Map", "src/Camera", "src/plainShaders.js"],
-    function(Map, Camera, plainShaders) {
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders"],
+    function(twgl, Map, Camera, plainShaders) {
         // sets up a webgl context for the canvas
         var canvas = document.getElementById("map-canvas");
         var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -10,12 +10,6 @@ require(["src/Map", "src/Camera", "src/plainShaders.js"],
         // paperSPI : ShaderProgramInfo
         var paperSPI = null;
 
-        console.dir(document.getElementById("plain-vertex"));
-
-        setTimeout(function(){
-            twgl.createProgramInfo(gl, ["plain-vertex", "plain-fragment"]);
-        }, 5000);
-
         var map = new Map({
             elevationPerlin: {
 
@@ -24,8 +18,8 @@ require(["src/Map", "src/Camera", "src/plainShaders.js"],
 
             },
             size: {
-                width: 5,
-                height: 5
+                width: 50,
+                height: 25
             }
         });
 
@@ -39,7 +33,8 @@ require(["src/Map", "src/Camera", "src/plainShaders.js"],
             delta = (time - now) / 1000;
             now = time;
 
-            //
+            // camera.reposition();
+            // TODO the camera.render call should not exist...
             camera.render(delta);
 
             // use recursion to continue rendering

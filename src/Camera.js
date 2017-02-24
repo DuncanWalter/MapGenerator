@@ -1,28 +1,31 @@
-define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
-    function(PerlinGenerator, PoissonGenerator, Tile) {
+define(["lib/TWGL.min", "src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
+    function(twgl, PerlinGenerator, PoissonGenerator, Tile) {
         /*
          Camera :: (gl: WebGLContext, plainSPI: ShaderProgramInfo, paperSPI: ShaderProgramInfo, map: Map) -> {
              render: (delta: Seconds) -> void,
 
          }
          */
+        // TODO redefine this to take a render function, a map, and some camera settings
         return function Camera(gl, plainSPI, paperSPI, map) {
 
-            var proto = Camera.prototype;
+            // var proto = Camera.prototype;
 
             var indices;
             var colors;
-            var offsets;
+            var positions;
 
             console.dir(Tile.mesh);
 
+            // TODO use indices for a formally efficient draw
             var buffers = {
-                positions: {numComponents: 3, data: Float32Array.of.apply(Float32Array, Tile.mesh)},
-                colors:    {numComponents: 3},
-                offsets:   {numComponents: 2},
-                indices:   {}
+                positions: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
+                colors:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
+                // offsets:   {numComponents: 2},
+                // indices:   {}
             };
             var bufferInfo;
+            bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
 
             var input = {
                 cursor: {
@@ -48,8 +51,9 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
 
             }
 
-
+            var elapsed = 0;
             this.render = function(delta){
+                elapsed += delta;
 
                 // make sure the canvas is in the correct location
                 twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -74,8 +78,8 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
                 map.tiles.forEach(function(tile){
                     maxdex += tile.indices.length;
                 });
-                indices = new Uint8Array(maxdex);
-                offsets = new Float32Array(maxdex * 8);
+                // indices = new Uint8Array(maxdex);
+                positions = new Float32Array(maxdex * 8);
                 colors = new Float32Array(maxdex * 12);
                 var index = 0;
                 map.tiles.forEach(function(tile){
@@ -83,30 +87,30 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
                     var xOffset = (((tile.index%map.width) + yOffset/3) * Math.sqrt(3)) % (map.width * 2 * Math.sqrt(3));
                     tile.indices.forEach(function(i){
 
-                        offsets[2*index] = xOffset;
-                        offsets[2*index+1] = yOffset;
+                        colors[index] = tile.color[0];
+                        positions[index++] = Tile.mesh[i][0] + xOffset;
+                        colors[index] = tile.color[1];
+                        positions[index++] = Tile.mesh[i][1] + yOffset;
+                        colors[index] = tile.color[2];
+                        positions[index++] = Tile.mesh[i][2];
 
-                        // TODO transfer colors as UInt8
-                        colors[3*index] = tile.color[0];
-                        colors[3*index+1] = tile.color[1];
-                        colors[3*index+2] = tile.color[2];
 
-                        indices[index++] = i;
                     });
                 });
                 // console.log(indices.buffer.byteLength);
                 // TODO splice off the ends of the buffer arrays if needed
                 // So I'm attempting to do this by taking sliced views of the buffers
-                buffers.indices.data = indices;
-                buffers.offsets.data = offsets;
-                buffers.colors.data  = colors;
-                // console.log(indices.buffer.byteLength);
+                // buffers.indices.data = indices;
+                // buffers.positions.data = positions;
+                // buffers.colors.data  = colors;
+                // // console.log(indices.buffer.byteLength);
 
-                bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
+
                 // console.log(indices.buffer.byteLength);
                 // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.indices, buffers.indices.data);
-                // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.colors, buffers.colors.data);
-                // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.offsets, buffers.offsets.data);
+                bufferInfo.numElements = index / 3;
+                twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.colors, colors);
+                twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.positions, positions);
 
                 // establish shader uniforms
                 var uniforms = {
@@ -115,16 +119,18 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
                 twgl.m4.ortho(-aspect*map.height, aspect*map.height, map.height, -map.height, -1, 1, uniforms.projection);
                 // //3D. If you like that sort of thing
-                // uniforms.projection = twgl.m4.perspective(15 * Math.PI / 180, gl.canvas.clientWidth / gl.c
-                // var view = twgl.m4.inverse(twgl.m4.lookAt([0, 0, -12], [0, 0, 0], [0, 1, 0]));
-                // uniforms.projection = twgl.m4.multiply(uniforms.projection, view);
-                // var world = twgl.m4.rotationY(time/4000);
+                // uniforms.projection = twgl.m4.perspective(30 * Math.PI / 180, gl.canvas.clientWidth / gl.canvas.clientHeight, 0.5, 30);
+                var view = twgl.m4.inverse(twgl.m4.lookAt([map.width / 2 * Math.sqrt(3), map.height * 3 / 4, 1], [map.width / 2 * Math.sqrt(3), map.height * 3 / 4, 0], [0, 1, 0]));
+                uniforms.projection = twgl.m4.multiply(uniforms.projection, view);
+                // var world = twgl.m4.rotationY(elapsed / 4);
                 // uniforms.projection = twgl.m4.multiply(uniforms.projection, world);
+
+
                 gl.useProgram(plainSPI.program);
                 twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
                 twgl.setUniforms(plainSPI, uniforms);
-                // twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES); // actual drawing happens here
-                gl.drawElements(gl.LINE_LOOP, bufferInfo.numElements, gl.UNSIGNED_BYTE, 0);
+                twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES); // actual drawing happens here
+                // gl.drawElements(gl.LINE_LOOP, bufferInfo.numElements, gl.UNSIGNED_BYTE, 0);
             };
 
 
