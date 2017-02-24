@@ -24,7 +24,7 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile", "src/Utils"],
             this.width = settings.size.width;
             this.tiles = new Array(this.width * this.height);
             for(var i = 0; i< this.tiles.length; i++){
-                this.tiles[i] = new Tile(i, Math.round(3*Math.random()+4*i/this.tiles.length), Math.round(4 + Math.random()));
+                this.tiles[i] = new Tile(i, Math.round(2*Math.random()+5*i/this.tiles.length), Math.round(4 + Math.random()));
             }
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
