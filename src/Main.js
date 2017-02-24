@@ -9,8 +9,13 @@
 // TODO offload the main render call from the camera to Main + Map
 // TODO implement camera input responsiveness
 
-require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders"],
-    function(twgl, Map, Camera, plainShaders) {
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/PoissonGenerator"],
+    function(twgl, Map, Camera, plainShaders, PoissonDistribution) {
+
+        var PD = new PoissonDistribution({width: 10, height: 10}, {nodeDensity: 10});
+        console.dir(PD);
+        return;
+
         // sets up a webgl context for the canvas
         var canvas = document.getElementById("map-canvas");
         var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");

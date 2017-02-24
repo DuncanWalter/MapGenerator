@@ -55,35 +55,39 @@ define(["lib/TWGL.min"],
             this.index = index;
 
             // sets color based on biome
-            switch(biome){
-                case 0: // OCEAN
-                    this.color = [0, 0, 0, 1];
-                    break;
-                case 1: // DESSERT
-                    this.color = [1, 0, 0, 1];
-                    break;
-                case 2: // JUNGLE
-                    this.color = [0, 1, 0, 1];
-                    break;
-                case 3: // PLAINS
-                    this.color = [1, 1, 0, 1];
-                    break;
-                case 4: // DREARY
-                    this.color = [0, 1, 1, 1];
-                    break;
-                case 5: // CRISP
-                    this.color = [1, 0, 1, 1];
-                    break;
-                case 6: // TUNDRA
-                    this.color = [0, 0, 1, 1];
-                    break;
-                case 7: // ICE_CAP
-                    this.color = [1, 1, 1, 1];
-                    break;
-                default: // UNDEFINED
-                    throw "PANIC during tile instantiation- given biome is not defined";
-                    break;
-            }
+            // switch(biome){
+            //     case 0: // OCEAN
+            //         this.color = [0, 0, 0, 1];
+            //         break;
+            //     case 1: // DESSERT
+            //         this.color = [1, 0, 0, 1];
+            //         break;
+            //     case 2: // JUNGLE
+            //         this.color = [0, 1, 0, 1];
+            //         break;
+            //     case 3: // PLAINS
+            //         this.color = [1, 1, 0, 1];
+            //         break;
+            //     case 4: // DREARY
+            //         this.color = [0, 1, 1, 1];
+            //         break;
+            //     case 5: // CRISP
+            //         this.color = [1, 0, 1, 1];
+            //         break;
+            //     case 6: // TUNDRA
+            //         this.color = [0, 0, 1, 1];
+            //         break;
+            //     case 7: // ICE_CAP
+            //         this.color = [1, 1, 1, 1];
+            //         break;
+            //     default: // UNDEFINED
+            //         throw "PANIC during tile instantiation- given biome is not defined";
+            //         break;
+            // }
+
+            // uses a grayscale color by biome
+            var color = Math.min(biome / 7, 1);
+            this.color = [color, color, color, 1];
 
             // sets indices based on terrain
             switch(terrain){
