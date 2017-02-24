@@ -86,6 +86,7 @@ define(["src/Utils"],
              // NEW VERSION:
              var neighborhood = dormantNodes.getNeighborhood(point, minRadius);
              console.log(neighborhood);
+             console.log("Number of points in checkzone: " + neighborhood.length);
              return (neighborhood.length == 0); // return true if there are no points in the neighborhood
          }
 
@@ -327,8 +328,10 @@ define(["src/Utils"],
              var distance;
              var maxDistance = Math.pow(radius, 2);
 
+             console.log("Length of tempArray before filter: " + tempArray.length);
+
              return tempArray.filter(function (currentPoint) { // filter out all the points that are not close and return the sorted list of those that are close
-                 if ((point.y - radius >= currentPoint.y) && (point.y + radius <= currentPoint.y)) { // check to see if the y value is close
+                 if ((point.y - radius <= currentPoint.y) && (point.y + radius >= currentPoint.y)) { // check to see if the y value is close
                      distance = Math.min(Math.pow(point.x - currentPoint.x, 2), Math.pow(point.x + worldWidth - currentPoint.x, 2)) // calculate distance between x coords (accounting for wrap)
                          + Math.pow(point.y - currentPoint.y, 2); // calculate distance between y coords
                      return distance <= maxDistance; // check to see if distance is not within radius
