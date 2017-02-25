@@ -201,7 +201,7 @@ define(["src/Utils"],
              a = Math.min(a, size.width-a);
              return Math.sqrt(Math.pow(a,2)+Math.pow(b,2));
          }
-         
+
 
          // /*
          //  checkDistance :: (point1: Point, point2: Point) -> boolean
