@@ -10,7 +10,7 @@ define(function (){
      }
      */
 
-    return function Utils() {
+    return  {
 
         /*
          binarySearch :: (array: Array,
@@ -21,24 +21,31 @@ define(function (){
          Takes an array, an element, and a sorting function and returns the index where the element should fit in the
          array or where it is in the array.
          */
-        this.binarySearch = function(array, element, Sorter){
-            var left = 0; // left index of the search
-            var right = array.length; // right index of the search
-            var mid = 0; // average of left and right
+        binarySearch: function(array, element, compare){
+
+            console.log("Entering a binary search");
+            var l = 0; // left index of the search
+            var r = array.length-1; // right index of the search
+            var m = 0; // average of left and right
             var equivalence; // whether element is less than (<0), equal (==0), or greater than (>0) another element
-            while (left < right) {
-                mid = Math.floor((left + right) / 2);
-                equivalence = Sorter(element, array[mid]);
+            while (l < r) {
+                m = Math.floor((l + r) >> 1);
+                equivalence = compare(element, array[m]);
                 if (equivalence == 0) {
-                    break; // the points are equivalent, so mid is already correct
+                    return m; // the points are equivalent, so mid is already correct
                 } else if (equivalence < 0) {
-                    right = mid; // if point is less than the checking point, set right = mid
+                    r = m; // if point is less than the checking point, set right = mid - 1
+                    // if (r<=l) return m
                 } else {
-                    left = mid; // if point is more than the checking point, set left = mid
+                    l = m + 1; // if point is more than the checking point, set left = mid + 1
+                    // if (l>=r) return m + 1
                 }
             }
-            return mid; // return the index the element is at (or should go)
+            return m; // return the index the element is at (or should go)
         }
+
+
+
     }
 
 });

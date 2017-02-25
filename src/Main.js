@@ -9,8 +9,22 @@
 // TODO offload the main render call from the camera to Main + Map
 // TODO implement camera input responsiveness
 
-require(["lib/TWGL.min", "src/Map", "src/Camera", "src/Tile", "src/plainShaders"],
-    function(twgl, Map, Camera, Tile, plainShaders) {
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/PoissonGenerator", "src/Tile", "src/Utils"],
+    function(twgl, Map, Camera, plainShaders, PoissonDistribution, Tile, Utils) {
+
+        // console.log("binary search test");
+        // var arr = [0, 1, 2, 3, 4, 4, 5, 7, 10, 23];
+        // console.dir(arr);
+        // for(var i = 0; i < arr.length; i++){
+        //     console.log(i +"->"+Utils.binarySearch(arr, i, function(a, b){return a-b}));
+        // }
+        //
+        //
+        //
+        // var PD = new PoissonDistribution({width: 100, height: 100}, {nodeDensity: 10, minRadius: 2, maxRadius: 4});
+        // console.dir(PD);
+        // return;
+
 
         // sets up a webgl context for the canvas
         var canvas = document.getElementById("map-canvas");
@@ -23,14 +37,16 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/Tile", "src/plainShaders"
 
         var map = new Map({
             elevationPerlin: {
-
+                octaveSizes: [2.5, 5, 10],
+                octaveWeights: [0.8, 0.9, 1],
+                centrality: [1, 1, 1]
             },
             continentPoisson: {
 
             },
             size: {
-                width: 50,
-                height: 25
+                width: 60,
+                height: 35
             }
         });
 
@@ -76,7 +92,6 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/Tile", "src/plainShaders"
 
             // only create new buffers if they are too small. Otherwise slice them up
             if(positions.buffer.byteLength < maxdex*8){
-                // indices = new Uint8Array(maxdex);
                 positions = new Float32Array(maxdex * 8);
                 colors = new Float32Array(maxdex * 12);
             }
