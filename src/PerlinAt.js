@@ -2,7 +2,7 @@
  * Created by Duncan on 2/19/2017.
  */
 
-define(["src/PoissonGenerator"],
+define(["src/PoissonDistribution"],
     function(PoissonDistribution){
 
         /*

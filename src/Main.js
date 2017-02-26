@@ -9,21 +9,10 @@
 // TODO offload the main render call from the camera to Main + Map
 // TODO implement camera input responsiveness
 
-require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/PoissonGenerator", "src/Tile", "src/Utils"],
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/PoissonDistribution", "src/Tile", "src/Utils"],
     function(twgl, Map, Camera, plainShaders, PoissonDistribution, Tile, Utils) {
 
-        // console.log("binary search test");
-        // var arr = [0, 1, 2, 3, 4, 4, 5, 7, 10, 23];
-        // console.dir(arr);
-        // for(var i = 0; i < arr.length; i++){
-        //     console.log(i +"->"+Utils.binarySearch(arr, i, function(a, b){return a-b}));
-        // }
-        //
-        //
-        //
-        // var PD = new PoissonDistribution({width: 100, height: 100}, {nodeDensity: 10, minRadius: 2, maxRadius: 4});
-        // console.dir(PD);
-        // return;
+        var rt3 = Math.sqrt(3);
 
 
         // sets up a webgl context for the canvas
@@ -37,16 +26,16 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
 
         var map = new Map({
             elevationPerlin: {
-                octaveSizes: [2.5, 5, 10],
-                octaveWeights: [0.8, 0.9, 1],
+                octaveSizes: [3, 5, 10],
+                octaveWeights: [7, 8, 10],
                 centrality: [1, 1, 1]
             },
             continentPoisson: {
 
             },
             size: {
-                width: 60,
-                height: 35
+                width: 50,
+                height: 34
             }
         });
 
@@ -54,6 +43,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
 
         var colors = new Float32Array(0);
         var positions = new Float32Array(0);
+        var uniforms = {};
 
         console.dir(Tile.mesh);
 
@@ -70,45 +60,55 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             delta = (time - now) / 1000;
             now = time;
 
-            camera.update(delta);
-
             // make sure the canvas is in the correct location
             twgl.resizeCanvasToDisplaySize(gl.canvas);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // sets the background color for blending
+            gl.clearColor(0.48,0.53,0.67,1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
-
             // enables the alpha channel
             // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             // gl.enable(gl.BLEND);
-            gl.clearColor(0.48,0.53,0.67,1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
 
+            camera.update(delta, uniforms);
+
+            // compile a list of all tiles that need to be rendered along with their screen location
+            var pnt, ind, queue = []; // queue: TileRenderInfo[]
+            var lBound = camera.viewTL.x;
+            var rBound = camera.viewBR.x;
+            var tBound = camera.viewTL.y;
+            var bBound = camera.viewBR.y;
+            for(var h = Math.floor(tBound/1.5)*1.5; h < bBound + 1.5; h += 1.5){
+                for(var w = (Math.floor(lBound/rt3) + 0.5*((h/1.5)%2))*rt3; w < rBound + rt3; w += rt3){
+                    pnt = {x: w, y: h};
+                    ind = map.indexAt(pnt);
+                    if (ind != undefined) {queue.push([pnt, map.tiles[ind]]);}
+                }
+            }
+            // use the TileRenderInfo queue to calculate requisite memory resources
             var maxdex = 0;
-            map.tiles.forEach(function(tile){
-                maxdex += tile.indices.length;
+            queue.forEach(function(tri){
+                maxdex += tri[1].indices.length;
             });
-
-
             // only create new buffers if they are too small. Otherwise slice them up
-            if(positions.buffer.byteLength < maxdex*8){
+            if(positions.buffer.byteLength < maxdex * 8){
                 positions = new Float32Array(maxdex * 8);
                 colors = new Float32Array(maxdex * 12);
             }
-
-            var index = 0;
-            map.tiles.forEach(function(tile){
-                var yOffset = Math.floor(tile.index/map.width) * 1.5;
-                var xOffset = (((tile.index%map.width) + yOffset/3) * Math.sqrt(3)) % (map.width * 2 * Math.sqrt(3));
-                tile.indices.forEach(function(i){
-
-                    colors[index] = tile.color[0];
-                    positions[index++] = Tile.mesh[i][0] + xOffset;
-                    colors[index] = tile.color[1];
-                    positions[index++] = Tile.mesh[i][1] + yOffset;
-                    colors[index] = tile.color[2];
+            var x, y, z, t, index = 0;
+            queue.forEach(function(tri){
+                x = tri[0].x;
+                y = tri[0].y;
+                t = tri[1];
+                t.indices.forEach(function(i){
+                    colors[index] = t.color[0];
+                    positions[index++] = Tile.mesh[i][0] + x;
+                    colors[index] = t.color[1];
+                    positions[index++] = Tile.mesh[i][1] + y;
+                    colors[index] = t.color[2];
                     positions[index++] = Tile.mesh[i][2];
-
                 });
             });
 
@@ -116,21 +116,6 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             bufferInfo.numElements = index / 3;
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.colors, colors);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.positions, positions);
-
-            // establish shader uniforms
-            var uniforms = {
-                projection: twgl.m4.identity() // actually calculated below
-                // camera: [map.width / 2 * Math.sqrt(3), map.height * 3 / 4, -1] // for the eventual paper shader
-            };
-            var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-            twgl.m4.ortho(-aspect*map.height, aspect*map.height, map.height, -map.height, -1, 1, uniforms.projection);
-
-            // //3D. If you like that sort of thing
-            // uniforms.projection = twgl.m4.perspective(30 * Math.PI / 180, gl.canvas.clientWidth / gl.canvas.clientHeight, 0.5, 30);
-            var view = twgl.m4.inverse(twgl.m4.lookAt([map.width / 2 * Math.sqrt(3), map.height * 3 / 4, 1], [map.width / 2 * Math.sqrt(3), map.height * 3 / 4, 0], [0, 1, 0]));
-            uniforms.projection = twgl.m4.multiply(uniforms.projection, view);
-            // var world = twgl.m4.rotationY(elapsed / 4);
-            // uniforms.projection = twgl.m4.multiply(uniforms.projection, world);
 
             gl.useProgram(plainSPI.program);
             twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
