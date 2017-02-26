@@ -86,7 +86,7 @@ define(["lib/TWGL.min"],
             // }
 
             // uses a grayscale color by biome
-            var color = Math.min(biome / 7, 1);
+            var color = Math.min(/*Math.round(*/biome/*)*/ / 7, 1);
             this.color = [color, color, color, 1];
 
             // sets indices based on terrain

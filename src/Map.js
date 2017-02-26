@@ -1,6 +1,8 @@
 
-define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
+define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
     function(PerlinAt, PoissonDistribution, Tile) {
+        var rt3 = Math.sqrt(3);
+
         /*
         Map :: ({
             size: (SizeSettings :: {
@@ -20,31 +22,58 @@ define(["src/PerlinGenerator", "src/PoissonGenerator", "src/Tile"],
         */
         return function Map(settings) {
 
+            var h = settings.size.height;
+            var w = settings.size.width;
+
             /*
              getPointAtIndex :: (index: int) -> Point : {x: float, y: float}
 
              Takes in the index of a tile and returns the a point with the x and y coordinates of the tile
              */
-            this.getPointAtIndex = function (index) {
-                var y = Math.floor(index/this.width) * 1.5;
-                var x = (((index%this.width) + y/3) * Math.sqrt(3)) % (this.width * 2 * Math.sqrt(3));
-
+            function pointAt(index) {
+                var y = Math.floor(index/w) * 1.5;
+                var x = ((index + y/3) % w) * rt3;
                 return {x: x, y: y};
-            };
+            }
+            this.pointAt = pointAt;
 
-            this.height = settings.size.height;
-            this.width = settings.size.width;
-            var octaveSizes = [3, 10];
-            var octaveWeights = [1, 1];
-            var perlinSettings = {octaveSizes: octaveSizes, octaveWeights: octaveWeights};
+            function indexAt(point) {
+                var row = Math.ceil(Math.floor(point.y/0.75)/2);
+                var col = Math.ceil(Math.floor(2*point.x/rt3 - row)/2);
+                col = (col % w + w) % w;
+                if(row < 0 || row >= h){return undefined}
+                return w * row + col;
+            }
+            this.indexAt = indexAt;
+
+            this.height = h;
+            this.width  = w;
             this.tiles = new Array(this.width * this.height);
-            var perlinAt = new PerlinAt(settings.size, perlinSettings);
+
+            // console.log("checking");
+            // for(var j = 0; j < this.tiles.length; j++){
+            //     var temp = indexAt(pointAt(j));
+            //     if(temp != j){
+            //         console.log(temp + " vs " + (j));
+            //     }
+            //     if(j == 0){
+            //         console.log(temp + " vs " + (j));
+            //     }
+            // }
+            // // console.log(indexAt({x:-0.00010 - rt3, y:0}));
+
+            var perlinAt = new PerlinAt({
+                width: Math.pow(3, 0.5) * this.width,
+                height: 2 + 1.5 * (this.height - 1)
+            }, settings.elevationPerlin);
+
             console.log("Succeeded at constructing the perlin generator. Assigning tiles their perlin.");
             for(var i = 0; i< this.tiles.length; i++){
-                //this.tiles[i] = new Tile(i, 3*Math.random()+4*i/this.tiles.length, Math.round(4 + Math.random()));
-                this.tiles[i] = new Tile(i, perlinAt(this.getPointAtIndex(i)), Math.round(4 + Math.random()));
 
+                this.tiles[i] = new Tile(i, (perlinAt(pointAt(i))+1)*4, Math.round(4 + Math.random()));
+                // this.tiles[i] = new Tile(i, i % 3 + 2*(i%this.width)/this.width, 1);
             }
+
 
             // var elevationPerlinNoise = PerlinGenerator.generate(settings.size, settings.elevationPerlin);
             // var continentPoissonNoise = PoissonGenerator.generate(settings.size, settings.continentPoisson);

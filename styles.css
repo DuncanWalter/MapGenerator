@@ -37,15 +37,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-body div.sheet {
-    min-width: 8.5in !important;
-    min-height: 11.0in !important;
-    max-width: 8.5in !important;
-    max-height: 11.0in !important;
-    width: 8.5in !important;
-    height: 11.0in !important;
-    box-shadow: 0 1px 4px 2px rgba(12,12,12,0.35)
-}
 .row {
     margin:0;
     display: -webkit-flex;
@@ -60,11 +51,11 @@ body div.sheet {
     display: flex;
     flex-direction: column;
 }
-div.card {
+.padded {
     padding: 0.65rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+}
+.padded >> .spaced {
+    margin: 0.65rem;
 }
 hr {
     width: 100%;
@@ -84,9 +75,6 @@ div {
 .box {
     transition: background-color 0.15s ease;
 }
-/*.light .box:hover, .dark .box:hover {*/
-    /*border-style: dashed;*/
-/*}*/
 .light .box {
     border: solid #222222 2px;
     margin: 0 1.95rem;
