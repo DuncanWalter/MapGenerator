@@ -26,16 +26,16 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
 
         var map = new Map({
             elevationPerlin: {
-                octaveSizes: [3, 5, 10],
+                octaveSizes:   [3.5, 5.6, 12],
                 octaveWeights: [7, 8, 10],
-                centrality: [1, 1, 1]
+                centrality:    [1, 1, 1]
             },
             continentPoisson: {
 
             },
             size: {
-                width: 50,
-                height: 34
+                width: 67,
+                height: 43
             }
         });
 
@@ -76,11 +76,11 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
 
             // compile a list of all tiles that need to be rendered along with their screen location
             var pnt, ind, queue = []; // queue: TileRenderInfo[]
-            var lBound = camera.viewTL.x;
-            var rBound = camera.viewBR.x;
-            var tBound = camera.viewTL.y;
-            var bBound = camera.viewBR.y;
-            for(var h = Math.floor(tBound/1.5)*1.5; h < bBound + 1.5; h += 1.5){
+            var lBound = camera.viewTL[0];
+            var rBound = camera.viewTR[0];
+            var tBound = camera.viewTL[1];
+            var bBound = camera.viewBR[1];
+            for(var h = Math.floor(bBound/1.5)*1.5; h < tBound + 1.5; h += 1.5){
                 for(var w = (Math.floor(lBound/rt3) + 0.5*((h/1.5)%2))*rt3; w < rBound + rt3; w += rt3){
                     pnt = {x: w, y: h};
                     ind = map.indexAt(pnt);
@@ -101,6 +101,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             queue.forEach(function(tri){
                 x = tri[0].x;
                 y = tri[0].y;
+                z = tri[1].elevation;
                 t = tri[1];
                 t.indices.forEach(function(i){
                     colors[index] = t.color[0];
@@ -108,7 +109,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
                     colors[index] = t.color[1];
                     positions[index++] = Tile.mesh[i][1] + y;
                     colors[index] = t.color[2];
-                    positions[index++] = Tile.mesh[i][2];
+                    positions[index++] = Tile.mesh[i][2] + z;
                 });
             });
 

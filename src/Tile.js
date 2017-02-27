@@ -42,7 +42,7 @@ define(["lib/TWGL.min"],
 
 
         /*
-        Tile :: (index: int, biome: (BiomeEnum :: int), terrain: (TerrainEnum :: int)) -> {
+        Tile :: (index: int, biome: (BiomeEnum :: int), elevation: (PerlinValue :: float)) -> {
             static mesh: float[];
             indices: int[];
 
@@ -50,13 +50,14 @@ define(["lib/TWGL.min"],
             color: float[] | float.length == 4
         }
         */
-        function Tile(index, biome, terrain){
+        function Tile(index, biome, elevation){
 
             this.index = index;
+            this.elevation = (biome==0) ? elevation * 0.27 - 0.23 : elevation * 0.18 + 0.23;
 
             // sets color based on biome
             // switch(biome){
-            //     case 0: // OCEAN
+            //     case 0: // OCEAN // TODO remember to deal with coastal tiles
             //         this.color = [0, 0, 0, 1];
             //         break;
             //     case 1: // DESSERT
@@ -86,10 +87,11 @@ define(["lib/TWGL.min"],
             // }
 
             // uses a grayscale color by biome
-            var color = Math.min(/*Math.round(*/biome/*)*/ / 7, 1);
+            var color = Math.min((biome + (elevation)*0.35) / 7, 1);
             this.color = [color, color, color, 1];
-
+            if(biome==0)this.color=[0.55, 0.75, 0.90, 1];
             // sets indices based on terrain
+            var terrain = Math.floor((elevation + 1) * 3);
             switch(terrain){
                 case 0: // OCEAN
                     this.indices = [
