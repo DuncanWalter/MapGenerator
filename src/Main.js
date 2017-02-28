@@ -1,16 +1,12 @@
 
 // TODO split Utils into separate definitions for modularity
 // TODO utilize the require js optimizer
-// TODO use an indexed draw for better efficiency
-// TODO attempt to reuse buffers and work off of buffer views for better efficiency
-// TODO redo noise generator naming and class schemes to reflect new functional format
-// TODO finish implementing the new functional format of the noise generators
-// TODO implement the new Continent generator
 // TODO offload the main render call from the camera to Main + Map
 // TODO implement camera input responsiveness
+// TODO extend tile mesh and normalizing
 
-require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/PoissonDistribution", "src/Tile", "src/Utils"],
-    function(twgl, Map, Camera, plainShaders, PoissonDistribution, Tile, Utils) {
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paperShaders", "src/PoissonDistribution", "src/Tile", "src/Utils"],
+    function(twgl, Map, Camera, plainShaders, paperShaders, PoissonDistribution, Tile, Utils) {
 
         var rt3 = Math.sqrt(3);
 
@@ -22,7 +18,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
         // plainSPI : ShaderProgramInfo
         var plainSPI = twgl.createProgramInfo(gl, [plainShaders.vertex, plainShaders.fragment]);
         // paperSPI : ShaderProgramInfo
-        var paperSPI = null;
+        var paperSPI = twgl.createProgramInfo(gl, [paperShaders.vertex, paperShaders.fragment]);
 
         var map = new Map({
             elevationPerlin: {
@@ -31,7 +27,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
                 centrality:    [1, 1, 1]
             },
             continentPoisson: {
-
+                // TODO stop hardcoding map
             },
             size: {
                 width: 67,
@@ -42,15 +38,15 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
         var camera = new Camera(gl, plainSPI, paperSPI, map);
 
         var colors = new Float32Array(0);
+        var normals = new Float32Array(0);
         var positions = new Float32Array(0);
         var uniforms = {};
 
-        console.dir(Tile.mesh);
-
-        // TODO use indices for a formally efficient draw (normals may conflict with indices...)
+        // TODO make colors Uint8s? figure out normals
         var buffers = {
-            positions: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
-            colors:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
+            a_position: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
+            a_normal:   {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
+            a_color:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
         };
         var bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
 
@@ -68,6 +64,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             gl.clear(gl.COLOR_BUFFER_BIT);
             // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
+            // gl.enable(gl.CULL_FACE);
             // enables the alpha channel
             // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
             // gl.enable(gl.BLEND);
@@ -81,11 +78,16 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             var tBound = camera.viewTL[1];
             var bBound = camera.viewBR[1];
             for(var h = Math.floor(bBound/1.5)*1.5; h < tBound + 1.5; h += 1.5){
-                for(var w = (Math.floor(lBound/rt3) + 0.5*((h/1.5)%2))*rt3; w < rBound + rt3; w += rt3){
-                    pnt = {x: w, y: h};
-                    ind = map.indexAt(pnt);
-                    if (ind != undefined) {queue.push([pnt, map.tiles[ind]]);}
+                if(h > -1.5){
+                    var l = (tBound - h)/(tBound - bBound) * -(camera.viewTL[0] - camera.viewBL[0]) + camera.viewTL[0];
+                    var r = (tBound - h)/(tBound - bBound) * -(camera.viewTR[0] - camera.viewBR[0]) + camera.viewTR[0];
+                    for(var w = (Math.floor(l/rt3) + 0.5*((h/1.5)%2))*rt3 - rt3; w < r + rt3; w += rt3){
+                        pnt = {x: w, y: h};
+                        ind = map.indexAt(pnt);
+                        if (ind != undefined) {queue.push([pnt, map.tiles[ind]]);}
+                    }
                 }
+
             }
             // use the TileRenderInfo queue to calculate requisite memory resources
             var maxdex = 0;
@@ -95,6 +97,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
             // only create new buffers if they are too small. Otherwise slice them up
             if(positions.buffer.byteLength < maxdex * 8){
                 positions = new Float32Array(maxdex * 8);
+                normals = new Float32Array(maxdex * 8);
                 colors = new Float32Array(maxdex * 12);
             }
             var x, y, z, t, index = 0;
@@ -103,24 +106,29 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/Poiss
                 y = tri[0].y;
                 z = tri[1].elevation;
                 t = tri[1];
-                t.indices.forEach(function(i){
+                t.indices.forEach(function(meshIndex, normalIndex){
+                    var n = t.normals[normalIndex];
                     colors[index] = t.color[0];
-                    positions[index++] = Tile.mesh[i][0] + x;
+                    normals[index] = n[0];
+                    positions[index++] = Tile.mesh[meshIndex][0] + x;
                     colors[index] = t.color[1];
-                    positions[index++] = Tile.mesh[i][1] + y;
+                    normals[index] = n[1];
+                    positions[index++] = Tile.mesh[meshIndex][1] + y;
                     colors[index] = t.color[2];
-                    positions[index++] = Tile.mesh[i][2] + z;
+                    normals[index] = n[2];
+                    positions[index++] = Tile.mesh[meshIndex][2] + z;
                 });
             });
 
             // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.indices, buffers.indices.data);
             bufferInfo.numElements = index / 3;
-            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.colors, colors);
-            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.positions, positions);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, normals);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
 
-            gl.useProgram(plainSPI.program);
-            twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
-            twgl.setUniforms(plainSPI, uniforms);
+            gl.useProgram(paperSPI.program);
+            twgl.setBuffersAndAttributes(gl, paperSPI, bufferInfo);
+            twgl.setUniforms(paperSPI, uniforms);
             twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES); // actual drawing happens here
             // gl.drawElements(gl.LINE_LOOP, bufferInfo.numElements, gl.UNSIGNED_BYTE, 0);
 

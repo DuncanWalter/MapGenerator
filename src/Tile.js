@@ -4,38 +4,92 @@
 define(["lib/TWGL.min"],
     function(twgl){
 
-        // TODO calculate ALL the face normals once when the program loads...
 
         // tiles have a uniform mesh available for rendering
         var rt3 = Math.pow(3, 0.5);
-        Tile.mesh = [
-            [0, 1, 0],
-            [rt3/2, 0.5, 0],
-            [rt3/2, -0.5, 0],
-            [0, -1, 0],
-            [-rt3/2, -0.5, 0],
-            [-rt3/2, 0.5, 0],
-            [0, 0, 0.6]
-        ];
 
+        // Defining a single mesh containing all the points used by tiles
+        Tile.mesh = (function(mesh){ // To simplify mesh creation, we process a human-friendly version
+            return mesh.reduce(function(accumulator, point, index){
+                var j = index * 6;
+                accumulator[j++] = point;
+                var temp = point;
+                for(var i = 0; i < 5; i++){
+                    temp = [
+                        temp[0]*0.5 - temp[1]*0.5*rt3,
+                        temp[0]*0.5*rt3 + temp[1]*0.5,
+                        temp[2]
+                    ];
+                    accumulator[j++] = temp;
+                }
+                return accumulator;
+            }, new Array(mesh.length * 6));
+        })([ // The raw mesh to be processed by the function above
+            [0, 1, 0],          // outer lip
+            [0, 1, -1],
+            [0, 0.85, 0],       // inner lip
+            [0, 0.85, 0.07],    // raised inner lip
+            [0, 0.85, -0.07],   // lowered inner lip
+            [0, 0.5, 0],        // filler neutral
+            [0, 0.5, 0.07],     // filler raised
+            [0, 0.5, -0.07],    // filler lowered
+            [0, 0.08, 0.6],     // cone
+            [0, 0, 0.6],        // peak
+            [0, 0, 0]           // center
+        ]);
+
+        var indexSets = (function(indexSets){
+            function cycle(indexCluster){
+                indexCluster.forEach(function(index, iterator){
+                    indexCluster[iterator] = index-index%6+(index+1)%6;
+                })
+            }
+            var a = [];
+            function process(indexSet){
+                if(typeof a != typeof indexSet){
+                    a.push(indexSet);
+                } else if(indexSet.length == 3) {
+                    for(var i = 0; i < 6; i++){
+                        a.push.apply(a, indexSet);
+                        cycle(indexSet);
+                    }
+                }
+            }
+            function shatter(ic){
+                return [ic.splice]
+            }
+            indexSets.forEach(function(indexSet){
+                process(indexSet);
+            });
+            return a;
+        })([
+            [1, 0, 36],
+            [1, 36, 37],
+            [37, 36, 60],
+            [0, 1, 7],
+            [1, 8, 7]
+        ]);
+
+
+        // TODO calculate ALL the face normals once when the program loads...
         // TODO get arrays of arrays of indices by terrain type and of color by biome type
-
-        var pnt0, pnt1, pnt2;
-        var vec1, vec2, vec3;
         function FaceNormals(mesh, indices){
-            // TODO is this really the length I want?
-            var normals = new Array(indices/3);
+            var pnt0, pnt1, pnt2;
+            var vec1, vec2, vec3;
+            var normals = new Array(indices.length);
             for(var i = 0; i < indices.length;){
                 // grab the points described by the indices and the mesh
-                pnt0 = mesh[i++];
-                pnt1 = mesh[i++];
-                pnt2 = mesh[i++];
-                // calculate two of the vectors between the 3 points
-                vec1 = twgl.vec3.create([pnt1[0]-pnt0[0], pnt1[1]-pnt0[1], pnt1[2]-pnt0[2]]);
-                vec2 = twgl.vec3.create([pnt0[0]-pnt2[0], pnt0[1]-pnt2[1], pnt0[2]-pnt2[2]]);
+                pnt0 = mesh[indices[i++]];
+                pnt1 = mesh[indices[i++]];
+                pnt2 = mesh[indices[i++]];
+                // calculate two of the vectors between the 3 points ...
+                vec1 = [pnt1[0]-pnt0[0], pnt1[1]-pnt0[1], pnt1[2]-pnt0[2]];
+                vec2 = [pnt2[0]-pnt0[0], pnt2[1]-pnt0[1], pnt2[2]-pnt0[2]];
                 // ... and cross them to find an orthogonal vector
-                vec3 = twgl.vec3.normalize(twgl.vec3.cross(vec1, vec2));
-                normals[i/3] = [vec3.x, vec3.y, vec3.z];
+                vec3 = twgl.v3.normalize(twgl.v3.cross(vec2, vec1));
+                normals[i - 3] = [vec3[0], vec3[1], vec3[2]];
+                normals[i - 2] = normals[i - 3];
+                normals[i - 1] = normals[i - 3];
             }
             return normals;
         }
@@ -94,54 +148,28 @@ define(["lib/TWGL.min"],
             var terrain = Math.floor((elevation + 1) * 3);
             switch(terrain){
                 case 0: // OCEAN
-                    this.indices = [
-                        0, 1, 2,
-                        0, 2, 3,
-                        0, 3, 4,
-                        0, 4, 5
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 1: // VALLEYS
-                    this.indices = [
-                        0, 1, 2,
-                        0, 2, 3,
-                        0, 3, 4,
-                        0, 4, 5
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 2: // LOWLANDS
-                    this.indices = [
-                        0, 1, 2,
-                        0, 2, 3,
-                        0, 3, 4,
-                        0, 4, 5
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 3: // FLATS
-                    this.indices = [
-                        0, 1, 2,
-                        0, 2, 3,
-                        0, 3, 4,
-                        0, 4, 5
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 4: // HILLS
-                    this.indices = [
-                        0, 1, 2,
-                        0, 2, 3,
-                        0, 3, 4,
-                        0, 4, 5
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 5: // MOUNTAINS
-                    this.indices = [
-                        6, 0, 1,
-                        6, 1, 2,
-                        6, 2, 3,
-                        6, 3, 4,
-                        6, 4, 5,
-                        6, 5, 0
-                    ];
+                    this.indices = indexSets;
+                    this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 default: // UNDEFINED
                     throw "PANIC during tile instantiation- given terrain is not defined";

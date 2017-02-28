@@ -10,30 +10,32 @@ define(function(){
     var head = $("head");
 
     head.append("<script id='"+vertexId+"' type='sglsl'>"
-        +"\n attribute vec3 positions;"
-        +"\n attribute vec3 colors;"
-        +"\n attribute vec2 offsets;"
+        +"\n uniform mat4 u_projection;"
+        +"\n "
+        +"\n attribute vec3 a_position;"
+        +"\n attribute vec3 a_color;"
         +"\n "
         +"\n "
-        +"\n uniform mat4 projection;"
         +"\n "
-        +"\n varying vec3 pass_color;"
+        +"\n varying vec3 v_color;"
         +"\n "
         +"\n void main() {"
-        +"\n     pass_color = colors;"
-        +"\n     gl_Position = projection * vec4(positions + vec3(offsets, 0.0), 1.0);"
+        +"\n     v_color = a_color;"
+        +"\n     gl_Position = u_projection * vec4(a_position, 1.0);"
         +"\n }"
-        +"\n </script>");
+        +"\n </script>"
+    );
 
     head.append("<script id='"+fragmentId+"' type='sglsl'>"
         +"\n precision mediump float;"
         +"\n "
-        +"\n varying vec3 pass_color;"
+        +"\n varying vec3 v_color;"
         +"\n "
         +"\n void main(){"
-        +"\n     gl_FragColor = vec4(pass_color, 1.0);"
+        +"\n     gl_FragColor = vec4(v_color, 1.0);"
         +"\n }"
-        +"\n </script>");
+        +"\n </script>"
+    );
 
     return {vertex: vertexId, fragment: fragmentId}; // : {vertex: (ScriptId :: String), fragment: (ScriptId :: String)}
 });
