@@ -13,7 +13,7 @@ define(["lib/TWGL.min", "src/Input"],
             var m4 = twgl.m4;
             this.x = map.width/2*rt3;
             this.y = map.height*0.75 - 15;
-            this.z = 13;
+            this.z = 14;
 
             // var
             // var acc = {};
@@ -38,6 +38,8 @@ define(["lib/TWGL.min", "src/Input"],
                 elapsed += delta;
                 this.x += delta * 3;
                 this.x %= map.width * rt3;
+                this.z = Math.sin(elapsed/5) * 12 + 20;
+                this.y = map.height*0.75 + this.z / 2 - 16;
 
 
             //
@@ -49,33 +51,19 @@ define(["lib/TWGL.min", "src/Input"],
             //
 
                 // establish shader uniforms
-                uniforms.u_lightAngle = v3.normalize([1, 1, 4]);
+                uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3)]);
                 uniforms.u_viewPosition = [this.x, this.y, this.z];
                 uniforms.u_projection = twgl.m4.identity(); // actually calculated below
-                // camera: [map.width / 2 * Math.sqrt(3), map.height * 3 / 4, -1] // for the eventual paper shader
-
-                // var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-                // twgl.m4.ortho(-aspect*map.height*0.5, aspect*map.height*0.5, map.height*0.5, -map.height*0.5, -10, 100, uniforms.projection);
-                //
-                // this.viewTL = {x: -aspect*map.height*0.5 + this.x, y: -map.height*0.5 + this.y};
-                // this.viewTR = {x: +aspect*map.height*0.5 + this.x, y: -map.height*0.5 + this.y};
-                // this.viewBL = {x: -aspect*map.height*0.5 + this.x, y: +map.height*0.5 + this.y};
-                // this.viewBR = {x: +aspect*map.height*0.5 + this.x, y: +map.height*0.5 + this.y};
 
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-                // twgl.m4.ortho(-aspect*map.height*0.5, aspect*map.height*0.5, map.height*0.5, -map.height*0.5, -10, 100, uniforms.projection);
-                //
-                // this.viewTL = {x: -aspect*map.height*0.5 + this.x, y: +map.height*0.5 + this.y};
-                // this.viewTR = {x: +aspect*map.height*0.5 + this.x, y: +map.height*0.5 + this.y};
-                // this.viewBL = {x: -aspect*map.height*0.5 + this.x, y: -map.height*0.5 + this.y};
-                // this.viewBR = {x: +aspect*map.height*0.5 + this.x, y: -map.height*0.5 + this.y};
+
 
                 // vertical viewing angle, screen aspect ratio, near, far, memoryTarget
-                m4.perspective(Math.PI * 0.28, aspect, 0.3, 300, uniforms.u_projection);
+                m4.perspective(Math.PI * 0.29, aspect, 0.3, 3000, uniforms.u_projection);
                 var view = m4.inverse(
                     twgl.m4.lookAt(
                         [this.x, this.y, this.z], // eye location
-                        [this.x, this.y+15, 0.0 ], // focus location
+                        [this.x, map.height*0.75, 0.0 ], // focus location
                         [0, 1, 0] // up vector
                     )
                 );

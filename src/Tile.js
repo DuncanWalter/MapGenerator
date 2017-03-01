@@ -63,11 +63,9 @@ define(["lib/TWGL.min"],
             });
             return a;
         })([
-            [1, 0, 36],
-            [1, 36, 37],
-            [37, 36, 60],
-            [0, 1, 7],
-            [1, 8, 7]
+            [0, 1, 60],
+            [1, 0, 7],
+            [8, 1, 7]
         ]);
 
 
@@ -86,7 +84,7 @@ define(["lib/TWGL.min"],
                 vec1 = [pnt1[0]-pnt0[0], pnt1[1]-pnt0[1], pnt1[2]-pnt0[2]];
                 vec2 = [pnt2[0]-pnt0[0], pnt2[1]-pnt0[1], pnt2[2]-pnt0[2]];
                 // ... and cross them to find an orthogonal vector
-                vec3 = twgl.v3.normalize(twgl.v3.cross(vec2, vec1));
+                vec3 = twgl.v3.normalize(twgl.v3.cross(vec1, vec2));
                 normals[i - 3] = [vec3[0], vec3[1], vec3[2]];
                 normals[i - 2] = normals[i - 3];
                 normals[i - 1] = normals[i - 3];
@@ -107,7 +105,7 @@ define(["lib/TWGL.min"],
         function Tile(index, biome, elevation){
 
             this.index = index;
-            this.elevation = (biome==0) ? elevation * 0.27 - 0.23 : elevation * 0.18 + 0.23;
+            this.elevation = (biome==0) ? elevation * 0.15 - 0.2 : elevation * 0.15 + 0.2;
 
             // sets color based on biome
             // switch(biome){
@@ -141,9 +139,9 @@ define(["lib/TWGL.min"],
             // }
 
             // uses a grayscale color by biome
-            var color = Math.min((biome + (elevation)*0.35) / 7, 1);
-            this.color = [color, color, color, 1];
-            if(biome==0)this.color=[0.55, 0.75, 0.90, 1];
+            var color = Math.min((biome + elevation*0.65) / 7, 1);
+            this.color = [color, color, color, 1.0];
+            if(biome==0)this.color=[0.55, 0.75, 0.90, 1.0];
             // sets indices based on terrain
             var terrain = Math.floor((elevation + 1) * 3);
             switch(terrain){

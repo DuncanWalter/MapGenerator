@@ -40,13 +40,34 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
         var colors = new Float32Array(0);
         var normals = new Float32Array(0);
         var positions = new Float32Array(0);
+        var oceanColors = Float32Array.from(
+            [
+                0.15, 0.25, 0.45, 0.65,
+                0.15, 0.25, 0.45, 0.65,
+                0.15, 0.25, 0.45, 0.65,
+                0.15, 0.25, 0.45, 0.65,
+                0.15, 0.25, 0.45, 0.65,
+                0.15, 0.25, 0.45, 0.65
+            ]
+        );
+        var oceanNormals = Float32Array.from(
+            [
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0
+            ]
+        );
+        var oceanPositions = new Float32Array(18);
         var uniforms = {};
 
         // TODO make colors Uint8s? figure out normals
         var buffers = {
             a_position: {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
             a_normal:   {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)},
-            a_color:    {numComponents: 3, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
+            a_color:    {numComponents: 4, drawType: gl.DYNAMIC_DRAW, data: new Float32Array(0)}
         };
         var bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
 
@@ -64,10 +85,11 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             gl.clear(gl.COLOR_BUFFER_BIT);
             // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
-            // gl.enable(gl.CULL_FACE);
+            gl.enable(gl.CULL_FACE);
             // enables the alpha channel
-            // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-            // gl.enable(gl.BLEND);
+
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.enable(gl.BLEND);
 
             camera.update(delta, uniforms);
 
@@ -77,7 +99,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             var rBound = camera.viewTR[0];
             var tBound = camera.viewTL[1];
             var bBound = camera.viewBR[1];
-            for(var h = Math.floor(bBound/1.5)*1.5; h < tBound + 1.5; h += 1.5){
+            for(var h = Math.floor(bBound/1.5)*1.5; h < tBound + 3.0; h += 1.5){
                 if(h > -1.5){
                     var l = (tBound - h)/(tBound - bBound) * -(camera.viewTL[0] - camera.viewBL[0]) + camera.viewTL[0];
                     var r = (tBound - h)/(tBound - bBound) * -(camera.viewTR[0] - camera.viewBR[0]) + camera.viewTR[0];
@@ -95,10 +117,10 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 maxdex += tri[1].indices.length;
             });
             // only create new buffers if they are too small. Otherwise slice them up
-            if(positions.buffer.byteLength < maxdex * 8){
-                positions = new Float32Array(maxdex * 8);
-                normals = new Float32Array(maxdex * 8);
-                colors = new Float32Array(maxdex * 12);
+            if(positions.buffer.byteLength < maxdex * 12){
+                positions = new Float32Array(maxdex * 3);
+                normals = new Float32Array(maxdex * 3);
+                colors = new Float32Array(maxdex * 4);
             }
             var x, y, z, t, index = 0;
             queue.forEach(function(tri){
@@ -108,20 +130,21 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 t = tri[1];
                 t.indices.forEach(function(meshIndex, normalIndex){
                     var n = t.normals[normalIndex];
-                    colors[index] = t.color[0];
+                    colors[index*4/3    ] = t.color[0];
+                    colors[index*4/3 + 1] = t.color[1];
+                    colors[index*4/3 + 2] = t.color[2];
+                    colors[index*4/3 + 3] = t.color[3];
                     normals[index] = n[0];
                     positions[index++] = Tile.mesh[meshIndex][0] + x;
-                    colors[index] = t.color[1];
                     normals[index] = n[1];
                     positions[index++] = Tile.mesh[meshIndex][1] + y;
-                    colors[index] = t.color[2];
                     normals[index] = n[2];
                     positions[index++] = Tile.mesh[meshIndex][2] + z;
                 });
             });
 
-            // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.indices, buffers.indices.data);
             bufferInfo.numElements = index / 3;
+            uniforms.u_materialTraits = [0.35, 0.65, 0.15, 1.0];
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, normals);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
@@ -130,7 +153,28 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             twgl.setBuffersAndAttributes(gl, paperSPI, bufferInfo);
             twgl.setUniforms(paperSPI, uniforms);
             twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES); // actual drawing happens here
-            // gl.drawElements(gl.LINE_LOOP, bufferInfo.numElements, gl.UNSIGNED_BYTE, 0);
+
+
+
+            bufferInfo.numElements = 6;
+            uniforms.u_materialTraits = [0.12, 0.88, 0.65, 3.0];
+            [
+                camera.viewTL, camera.viewBL, camera.viewBR,
+                camera.viewTL, camera.viewBR, camera.viewTR
+            ].forEach(function(n, i){
+                oceanPositions[3*i    ] = n[0];
+                oceanPositions[3*i + 1] = n[1];
+                oceanPositions[3*i + 2] = n[2];
+            });
+            // console.dir(oceanPositions);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, oceanColors);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, oceanNormals);
+            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, oceanPositions);
+
+            gl.useProgram(paperSPI.program);
+            twgl.setBuffersAndAttributes(gl, paperSPI, bufferInfo);
+            twgl.setUniforms(paperSPI, uniforms);
+            twgl.drawBufferInfo(gl, bufferInfo, gl.TRIANGLES); // actual drawing happens here
 
             // use recursion to continue rendering
             // by piggybacking on the DOM render loop
