@@ -11,9 +11,15 @@ define(["lib/TWGL.min", "src/Input"],
             var rt3 = Math.sqrt(3);
             var v3 = twgl.v3;
             var m4 = twgl.m4;
-            this.x = map.width/2*rt3;
-            this.y = map.height*0.75 - 15;
-            this.z = 14;
+
+            var input = new Input();
+            var focus = [map.width/2*rt3, map.height*0.75 - 15, 0];
+            var zoom = 1;
+
+
+            // this.x = map.width/2*rt3;
+            // this.y = map.height*0.75 - 15;
+            // this.z = 14;
 
             // var
             // var acc = {};
@@ -23,7 +29,7 @@ define(["lib/TWGL.min", "src/Input"],
             // var pan = twgl.Vec3.create(0, 0, 0);
             // var panSettings = {};
 
-            var zim = 1;
+            // var zim = 1;
 
             // var zoom = {
             //     speed: 1,
@@ -36,10 +42,22 @@ define(["lib/TWGL.min", "src/Input"],
             var elapsed = 0;
             this.update = function(delta, uniforms){
                 elapsed += delta;
-                this.x += delta * 3;
-                this.x %= map.width * rt3;
-                this.z = Math.sin(elapsed/5) * 12 + 20;
-                this.y = map.height*0.75 + this.z / 2 - 16;
+
+                var cursor = input.pollCursor();
+                if (input.stateOf(69)) zoom *= 1.03;
+                if (cursor.dw > 0)     zoom *= 1.13;
+                if (input.stateOf(81)) zoom /= 1.03;
+                if (cursor.dw < 0)     zoom /= 1.13;
+                if (input.stateOf(39) || input.stateOf(68)) focus[0] += delta * 100;
+                if (input.stateOf(37) || input.stateOf(65)) focus[0] -= delta * 100;
+                if (input.stateOf(38) || input.stateOf(87)) focus[1] += delta * 100;
+                if (input.stateOf(40) || input.stateOf(83)) focus[1] -= delta * 100;
+                focus[0] %= map.width * rt3;
+
+                // this.x += delta * 3;
+
+                // this.z = Math.sin(elapsed/5) * 12 + 20;
+                // this.y = map.height*0.75 + this.z / 2 - 16;
 
 
             //
@@ -52,7 +70,7 @@ define(["lib/TWGL.min", "src/Input"],
 
                 // establish shader uniforms
                 uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3)]);
-                uniforms.u_viewPosition = [this.x, this.y, this.z];
+                uniforms.u_viewPosition = [focus[0], focus[1] - 4, 20 / zoom];
                 uniforms.u_projection = twgl.m4.identity(); // actually calculated below
 
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -62,8 +80,8 @@ define(["lib/TWGL.min", "src/Input"],
                 m4.perspective(Math.PI * 0.29, aspect, 0.3, 3000, uniforms.u_projection);
                 var view = m4.inverse(
                     twgl.m4.lookAt(
-                        [this.x, this.y, this.z], // eye location
-                        [this.x, map.height*0.75, 0.0 ], // focus location
+                        [focus[0], focus[1] - 4, 20 / zoom], // eye location
+                        focus, // focus location
                         [0, 1, 0] // up vector
                     )
                 );
@@ -71,7 +89,7 @@ define(["lib/TWGL.min", "src/Input"],
 
                 // To clip our view and not exhaust computers, we clip the view
                 var projInv =  m4.inverse(uniforms.u_projection);
-                var thisVec = [this.x, this.y, this.z];
+                var thisVec = [focus[0], focus[1] - 4, 20 / zoom];
                 var viewBox = [   // Calculating the world coordinates at the corners of the canvas
                     [+1, -1, -1], // BR post-projection frustum vertex
                     [+1, +1, -1], // TR post-projection frustum vertex

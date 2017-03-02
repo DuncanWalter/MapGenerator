@@ -157,7 +157,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
 
             bufferInfo.numElements = 6;
-            uniforms.u_materialTraits = [0.12, 0.88, 0.65, 3.0];
+            uniforms.u_materialTraits = [0.12, 0.88, 0.65, 8.0];
             [
                 camera.viewTL, camera.viewBL, camera.viewBR,
                 camera.viewTL, camera.viewBR, camera.viewTR

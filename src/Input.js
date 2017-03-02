@@ -2,63 +2,66 @@
  * Created by Duncan on 2/24/2017.
  */
 define(function(){
-    var input = {};
-    var that = this; // yup...
+    return function Input(){
 
-    // this.keysDown  = []; // keeps an array of keys and their states
-    // for(var i = 0; i < 221; i++){this.keysDown[i] = false;}
-    //
-    // this.deltaMice = []; // any mouse buttons that have changed state this frame
-    // this.miceDown  = []; // also keeps an array of mouse buttons
-    // for(var j = 0; j < 3;   j++){this.keysDown[j] = false;}
-    //
-    // this.deltaWheels = [];
-    //
-    // this.cursor = {x: null, y: null, dx: 0, dy: 0};
-    //
-    // // The Event Listeners, which update the inputListener's information between firings
-    // document.addEventListener("mousemove", function(e){that.setMouseState(e)}, false);
-    // this.setMouseState = function(event){
-    //     // this.mouseScreens = getMousePosition(canvas, event);
-    // };
-    //
-    // // mouse button listeners
-    // document.addEventListener("mousedown", function(e){that.setMice(e, true )});
-    // document.addEventListener("mouseup",   function(e){that.setMice(e, false)});
-    // this.setMice = function(event, isDown){
-    //     this.miceDown[event.button] = isDown;
-    //     this.deltaMice.push({button: event.button, isDown: isDown});
-    // };
-    //
-    // canvas.addEventListener("mousewheel", function(e){that.setRoll(e)});
-    // this.setRoll = function(event){
-    //     this.deltaWheels.push(event.wheelDelta);
-    // };
-    // document.onmousewheel = function(){return false};
-    //
-    // // key listeners
-    // canvas.addEventListener("keydown",   function(e){that.setKeys(e, true )}, false);
-    // canvas.addEventListener("keyup",     function(e){that.setKeys(e, false)}, false);
-    // this.setKeys = function(event, isDown){
-    //     this.keysDown[event.keyCode] = isDown;
-    //     this.deltaKeys.push({keyCode: event.keyCode, isDown: isDown});
-    // };
-    //
-    // canvas.oncontextmenu = function(){return false;}; // this prevents context menus from appearing on the canvas
-    //
-    // // x times a second, the listener will prompt the user to acknowledge commands and update figures
-    // var calcDelay = 1000 / user.settings.FramesPerSecond;
-    // setInterval(function(){that.cycleCalcFrame(Date.now(), calcDelay)}, calcDelay);
-    // this.cycleCalcFrame = function(currentTime, delay){
-    //     user.calcFrame(currentTime, delay, this);
-    //     this.deltaMice   = [];
-    //     this.deltaKeys   = [];
-    //     this.deltaWheels = [];
-    // };
+        var cursor = {x: null, y: null, dx: 0, dy: 0, dw: 0};
+        var inputsDown  = new Array(221); // keeps an array of all input states
+        var bindings = {};
 
+        this.stateOf = function(keyCode){
+            return !!inputsDown[keyCode] ? inputsDown[keyCode] > 0 : false;
+        };
+        this.pollCursor = function(){
+            var c = cursor;
+            cursor = {x: c.x, y: c.y, dx: 0, dy: 0, dw: 0};
+            return c;
+        };
+        this.onDown = function(keyCode, fun){
+            if (!bindings["d"+keyCode]) bindings["d"+keyCode] = [];
+            bindings["d"+keyCode].push(fun);
+        };
+        this.onUp   = function(keyCode, fun){
+            if (!bindings["u"+keyCode]) bindings["u"+keyCode] = [];
+            bindings["u"+keyCode].push(fun);
+        };
 
+        // The Event Listeners, which update the inputListener's information between firings
+        document.addEventListener("mousemove", function(e){
+            cursor.dx += e.clientX - cursor.x;
+            cursor.dy += e.clientY - cursor.y;
+            cursor.x = e.clientX;
+            cursor.y = e.clientY;
+        }, false);
 
+        // mouse button listeners
+        document.addEventListener("mousedown", function(e){
+            if (bindings["d"+e.which]) bindings["d"+e.which].forEach(function(fun){fun()});
+            if (inputsDown[16]>0 && e.which!=16) console.log(e.which);
+            inputsDown[e.which] = +Date.now();
+        });
+        document.addEventListener("mouseup",   function(e){
+            if (bindings["u"+e.which]) bindings["u"+e.which].forEach(function(fun){fun()});
+            inputsDown[e.which] = -Date.now();
+        });
+        document.addEventListener("mousewheel", function(e){
+            cursor.dw += e.wheelDelta;
+        });
 
+        // key listeners
+        document.addEventListener("keydown",   function(e){
+            if (bindings["d"+e.which]) bindings["d"+e.which].forEach(function(fun){fun()});
+            if (inputsDown[16]>0 && e.which!=16) console.log(e.which);
+            inputsDown[e.which] = +Date.now();
+        }, false);
+        document.addEventListener("keyup",     function(e){
+            if (bindings["u"+e.which]) bindings["u"+e.which].forEach(function(fun){fun()});
+            inputsDown[e.which] = -Date.now();
+        }, false);
 
-    return input;
+        // this prevents context menus from appearing on the canvas
+        document.onmousewheel  = function(){return false;};
+        document.oncontextmenu = function(){return false;};
+        $("body").focus();
+    }
+
 });
