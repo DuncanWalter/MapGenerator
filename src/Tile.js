@@ -141,7 +141,12 @@ define(["lib/TWGL.min"],
             // uses a grayscale color by biome
             var color = Math.min((biome + elevation*0.65) / 7, 1);
             this.color = [color, color, color, 1.0];
-            if(biome==0)this.color=[0.55, 0.75, 0.90, 1.0];
+            if (biome==0) this.color = [
+                0.40 + elevation * 0.15,
+                0.60 + elevation * 0.15,
+                0.80 + elevation * 0.15,
+                1.0
+            ];
             // sets indices based on terrain
             var terrain = Math.floor((elevation + 1) * 3);
             switch(terrain){

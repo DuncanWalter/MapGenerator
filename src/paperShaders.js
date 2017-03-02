@@ -69,10 +69,11 @@ define(function(){
         +"\n    float diff = v_diffuse * max(dot(v_normal, v_lightAngle), 0.0);"
         +"\n "
         +"\n    vec3 viewAngle = normalize(v_viewPosition - v_vertPosition);"
+        +"\n "
         +"\n    float spec = v_specular * pow(max(dot(viewAngle, normalize(-v_lightAngle - 2.0*dot(v_normal, -v_lightAngle)*v_normal)), 0.0), v_sheen);"
+        +"\n    vec4 matteColor = (vec4(v_ambient + diff, v_ambient + diff, v_ambient + diff, 1.0) * v_color);"
         +"\n "
-        +"\n "
-        +"\n    gl_FragColor = vec4(spec, spec, spec, spec) + (vec4(v_ambient + diff, v_ambient + diff, v_ambient + diff, 1.0) * v_color);"
+        +"\n    gl_FragColor = spec * (vec4(1.0, 1.0, 1.0, 1.0)-matteColor) + matteColor;"
         +"\n }"
         +"\n </script>");
 

@@ -160,7 +160,7 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
             this.tiles = tiles.map(function(tile, index){
                 var t = new Tile(index, tile.biome, perlinAt(pointAt(index)));
                 if (tile.biome == 0) {
-                    t.color = [0.55, 0.75, 0.90, 1];
+                    // t.color = [0.55, 0.75, 0.90, 1];
                 } else {
                     // add elevation stats
                 }

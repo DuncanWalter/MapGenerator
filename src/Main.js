@@ -30,8 +30,8 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 // TODO stop hardcoding map
             },
             size: {
-                width: 67,
-                height: 43
+                width: 65,
+                height: 40
             }
         });
 
@@ -72,7 +72,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
         var bufferInfo = twgl.createBufferInfoFromArrays(gl, buffers);
 
         var delta = 0; // delta : (Seconds :: float)
-        var now = Date.now(); // now : (POSIXTime :: int)
+        var now = 0; // now : (POSIXTime :: int)
         function render(time){ // render :: (time : POSIXTime) -> void
             delta = (time - now) / 1000;
             now = time;
@@ -95,8 +95,6 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
             // compile a list of all tiles that need to be rendered along with their screen location
             var pnt, ind, queue = []; // queue: TileRenderInfo[]
-            var lBound = camera.viewTL[0];
-            var rBound = camera.viewTR[0];
             var tBound = camera.viewTL[1];
             var bBound = camera.viewBR[1];
             for(var h = Math.floor(bBound/1.5)*1.5; h < tBound + 3.0; h += 1.5){
@@ -144,7 +142,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             });
 
             bufferInfo.numElements = index / 3;
-            uniforms.u_materialTraits = [0.35, 0.65, 0.15, 1.0];
+            uniforms.u_materialTraits = [0.35, 0.65, 0.35, 1.3];
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, normals);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
@@ -157,7 +155,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
 
             bufferInfo.numElements = 6;
-            uniforms.u_materialTraits = [0.12, 0.88, 0.65, 8.0];
+            uniforms.u_materialTraits = [0.12, 0.88, 1.0, 38.0];
             [
                 camera.viewTL, camera.viewBL, camera.viewBR,
                 camera.viewTL, camera.viewBR, camera.viewTR

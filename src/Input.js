@@ -4,7 +4,7 @@
 define(function(){
     return function Input(){
 
-        var cursor = {x: null, y: null, dx: 0, dy: 0, dw: 0};
+        var cursor = {x: 0, y: 0, dx: 0, dy: 0, dw: 0};
         var inputsDown  = new Array(221); // keeps an array of all input states
         var bindings = {};
 

@@ -43,15 +43,21 @@ define(["lib/TWGL.min", "src/Input"],
             this.update = function(delta, uniforms){
                 elapsed += delta;
 
+                console.log(delta);
+
                 var cursor = input.pollCursor();
                 if (input.stateOf(69)) zoom *= 1.03;
                 if (cursor.dw > 0)     zoom *= 1.13;
                 if (input.stateOf(81)) zoom /= 1.03;
                 if (cursor.dw < 0)     zoom /= 1.13;
-                if (input.stateOf(39) || input.stateOf(68)) focus[0] += delta * 100;
-                if (input.stateOf(37) || input.stateOf(65)) focus[0] -= delta * 100;
-                if (input.stateOf(38) || input.stateOf(87)) focus[1] += delta * 100;
-                if (input.stateOf(40) || input.stateOf(83)) focus[1] -= delta * 100;
+                if (input.stateOf(39) || input.stateOf(68)) focus[0] += delta * 70;
+                if (cursor.x > gl.canvas.clientWidth  - 10) focus[0] += delta * 70;
+                if (input.stateOf(37) || input.stateOf(65)) focus[0] -= delta * 70;
+                if (cursor.x < 10)                          focus[0] -= delta * 70;
+                if (input.stateOf(38) || input.stateOf(87)) focus[1] += delta * 70;
+                if (cursor.y < 10)                          focus[1] += delta * 70;
+                if (input.stateOf(40) || input.stateOf(83)) focus[1] -= delta * 70;
+                if (cursor.y > gl.canvas.clientHeight - 10) focus[1] -= delta * 70;
                 focus[0] %= map.width * rt3;
 
                 // this.x += delta * 3;
@@ -69,7 +75,7 @@ define(["lib/TWGL.min", "src/Input"],
             //
 
                 // establish shader uniforms
-                uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3)]);
+                uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3) + 0.55]);
                 uniforms.u_viewPosition = [focus[0], focus[1] - 4, 20 / zoom];
                 uniforms.u_projection = twgl.m4.identity(); // actually calculated below
 
