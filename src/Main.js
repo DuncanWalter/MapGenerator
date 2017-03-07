@@ -30,12 +30,12 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 // TODO stop hardcoding map
             },
             size: {
-                width: 65,
-                height: 40
+                width: 35,
+                height: 20
             }
         });
 
-        var camera = new Camera(gl, plainSPI, paperSPI, map);
+        var camera = new Camera(gl, map);
 
         var colors = new Float32Array(0);
         var normals = new Float32Array(0);
@@ -81,7 +81,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             twgl.resizeCanvasToDisplaySize(gl.canvas);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // sets the background color for blending
-            gl.clearColor(0.48,0.53,0.67,1);
+            gl.clearColor(0.0,0.0,0.0,1);
             gl.clear(gl.COLOR_BUFFER_BIT);
             // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
@@ -119,6 +119,10 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 positions = new Float32Array(maxdex * 3);
                 normals = new Float32Array(maxdex * 3);
                 colors = new Float32Array(maxdex * 4);
+            } else if(positions.buffer.byteLength > maxdex * 32){
+                positions = new Float32Array(maxdex * 6);
+                normals = new Float32Array(maxdex * 6);
+                colors = new Float32Array(maxdex * 8);
             }
             var x, y, z, t, index = 0;
             queue.forEach(function(tri){
@@ -142,7 +146,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             });
 
             bufferInfo.numElements = index / 3;
-            uniforms.u_materialTraits = [0.35, 0.65, 0.35, 1.3];
+            uniforms.u_materialTraits = [0.24, 0.76, 0.25, 1.0];
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, normals);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
@@ -155,7 +159,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
 
             bufferInfo.numElements = 6;
-            uniforms.u_materialTraits = [0.12, 0.88, 1.0, 38.0];
+            uniforms.u_materialTraits = [0.12, 0.88, 1.00, 38.0];
             [
                 camera.viewTL, camera.viewBL, camera.viewBR,
                 camera.viewTL, camera.viewBR, camera.viewTR
@@ -179,7 +183,26 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             requestAnimationFrame(render);
         }
 
+
+
         // TODO hook up any html buttons / elements here
+        $("#new-hex-scape").click(function(){
+            map = new Map({
+                elevationPerlin: {
+                    octaveSizes:   [3.5, 5.6, 12],
+                    octaveWeights: [7, 8, 10],
+                    centrality:    [1, 1, 1]
+                },
+                continentPoisson: {
+                    // TODO stop hardcoding map
+                },
+                size: {
+                    width: 65,
+                    height: 40
+                }
+            });
+            camera = new Camera(gl, map);
+        });
 
         // kicks off the rendering loop
         requestAnimationFrame(render);

@@ -2,7 +2,7 @@
  * Created by Duncan on 2/24/2017.
  */
 define(function(){
-    return function Input(){
+    function Input(){
 
         var cursor = {x: 0, y: 0, dx: 0, dy: 0, dw: 0};
         var inputsDown  = new Array(221); // keeps an array of all input states
@@ -63,5 +63,7 @@ define(function(){
         document.oncontextmenu = function(){return false;};
         $("body").focus();
     }
+
+    return Input;
 
 });

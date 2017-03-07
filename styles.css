@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'Roboto';
-    src: url(roboto/roboto-regular.ttf);
+    /*src: url(assets/roboto/roboto-regular.ttf);*/
 }
 @font-face {
     font-family: 'Chosence';
-    src: url(chosence.regular.otf);
+    src: url(assets/chosence.regular.otf);
 }
 html {
     font-family: Roboto, sans-serif;
@@ -107,37 +107,8 @@ div {
 .light hr {
     background-color: #222222;
 }
-.accent {
-    margin: 0;
-}
-.col > .accent {
-    height: 2rem;
-}
-.row > .accent {
-    width: 2rem;
-}
-.dark .accent {
-    background: black url(scribble-light.png);
-}
-.light .accent {
-    background: #DADADA;
-}
 .prose p{
     text-indent: 2rem;
-}
-.signiture {
-    width: 100%;
-    margin: 1.3rem 0 0.65rem;
-    display: flex;
-    justify-content: center;
-}
-.signiture::after {
-    content: "";
-    display: block;
-    height: 54px;
-    width: 179px;
-    background: url(signiture.png) center center;
-    background-size: 100%;
 }
 .f1 { flex: 1  ; }
 .f2 { flex: 2  ; }
@@ -161,9 +132,12 @@ div {
 canvas.webgl {
     position: absolute;
     margin: 0;
+    top: 0;
+    bottom: 0;
     width: 100%;
     height: 100%;
     transition: 0.6s ease;
+    z-index: -3;
 }
 .square {
     position: relative;
@@ -230,21 +204,21 @@ div.achievement.complete:hover {
 div.achievement:hover {
     width: 12rem;
 }
-button {
+.button {
     padding: 7pt 7pt 4pt;
     text-align: center;
     font-family: Chosence, Roboto, sans-serif;
     font-size: 13pt;
     background-color: transparent;
     border: solid 2px #FAFAFA;
-    cursor: hand;
     transition: 0.45s ease;
     margin: 0 1.3rem 1.3rem;
     color: #FAFAFA;
 }
-button:hover {
+.button:hover {
     background-color: #FAFAFA;
     color: #222222;
+    cursor: hand;
 }
 input {
     background-color: transparent;

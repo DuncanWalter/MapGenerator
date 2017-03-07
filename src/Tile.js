@@ -28,44 +28,96 @@ define(["lib/TWGL.min"],
             [0, 1, 0],          // outer lip
             [0, 1, -1],
             [0, 0.85, 0],       // inner lip
-            [0, 0.85, 0.07],    // raised inner lip
-            [0, 0.85, -0.07],   // lowered inner lip
+            [-0.5 * 0.55, 0.55 * rt3 / 2, 0.1],    // raised inner lip
+            [-0.5 * 0.55, 0.55 * rt3 / 2,-0.1],   // lowered inner lip
             [0, 0.5, 0],        // filler neutral
             [0, 0.5, 0.07],     // filler raised
             [0, 0.5, -0.07],    // filler lowered
-            [0, 0.08, 0.6],     // cone
-            [0, 0, 0.6],        // peak
+            [0, 0, 0.1],        // cone
+            [0, 0, 0.55],       // peak
             [0, 0, 0]           // center
         ]);
-
-        var indexSets = (function(indexSets){
+        var meshes = (function(meshes){
             function cycle(indexCluster){
                 indexCluster.forEach(function(index, iterator){
                     indexCluster[iterator] = index-index%6+(index+1)%6;
                 })
             }
-            var a = [];
-            function process(indexSet){
-                if(typeof a != typeof indexSet){
-                    a.push(indexSet);
-                } else if(indexSet.length == 3) {
-                    for(var i = 0; i < 6; i++){
-                        a.push.apply(a, indexSet);
-                        cycle(indexSet);
+            return meshes.map(function(mesh){
+                var a = [];
+                mesh.forEach(function(indexSet){
+                    if(typeof a != typeof indexSet){
+                        // un-grouped indices are assumed to be hard-coded, and are passed through
+                        a.push(indexSet);
+                    } else if(indexSet.length == 3) {
+                        //
+                        for(var i = 0; i < 6; i++){
+                            a.push.apply(a, indexSet);
+                            cycle(indexSet);
+                        }
                     }
-                }
-            }
-            function shatter(ic){
-                return [ic.splice]
-            }
-            indexSets.forEach(function(indexSet){
-                process(indexSet);
+                });
+                return a;
             });
-            return a;
         })([
-            [0, 1, 60],
-            [1, 0, 7],
-            [8, 1, 7]
+            [
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5
+            ],
+            [
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5,
+                [1, 0, 7],
+                [8, 1, 7]
+            ],
+            [
+
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5,
+                [1, 0, 7],
+                [8, 1, 7]
+                // [0, 1, 24],
+                // [1, 25, 24],
+                // // [12, 13, 24],
+                // // [13, 25, 24],
+                // 24, 25, 26,
+                // 24, 26, 27,
+                // 24, 27, 28,
+                // 24, 28, 29,
+                // [1, 0, 7],
+                // [8, 1, 7]
+            ],
+            [
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5,
+                [1, 0, 7],
+                [8, 1, 7]
+            ],
+            [
+                [0, 1, 12],
+                [1, 13, 12],
+                [12, 13, 18],
+                [13, 19, 18],
+                18, 19, 20,
+                18, 20, 21,
+                18, 21, 22,
+                18, 22, 23,
+                [1, 0, 7],
+                [8, 1, 7]
+            ],
+            [
+                [0, 1, 54],
+                [1, 0, 7],
+                [8, 1, 7]
+            ]
         ]);
 
 
@@ -105,42 +157,42 @@ define(["lib/TWGL.min"],
         function Tile(index, biome, elevation){
 
             this.index = index;
-            this.elevation = (biome==0) ? elevation * 0.15 - 0.2 : elevation * 0.15 + 0.2;
+            this.elevation = (biome==0) ? elevation * 0.15 - 0.2 : elevation * 0.23 + 0.25;
+            if (biome==8) this.elevation += 0.15;
 
-            // sets color based on biome
-            // switch(biome){
-            //     case 0: // OCEAN // TODO remember to deal with coastal tiles
-            //         this.color = [0, 0, 0, 1];
-            //         break;
-            //     case 1: // DESSERT
-            //         this.color = [1, 0, 0, 1];
-            //         break;
-            //     case 2: // JUNGLE
-            //         this.color = [0, 1, 0, 1];
-            //         break;
-            //     case 3: // PLAINS
-            //         this.color = [1, 1, 0, 1];
-            //         break;
-            //     case 4: // DREARY
-            //         this.color = [0, 1, 1, 1];
-            //         break;
-            //     case 5: // CRISP
-            //         this.color = [1, 0, 1, 1];
-            //         break;
-            //     case 6: // TUNDRA
-            //         this.color = [0, 0, 1, 1];
-            //         break;
-            //     case 7: // ICE_CAP
-            //         this.color = [1, 1, 1, 1];
-            //         break;
-            //     default: // UNDEFINED
-            //         throw "PANIC during tile instantiation- given biome is not defined";
-            //         break;
-            // }
 
             // uses a grayscale color by biome
-            var color = Math.min((biome + elevation*0.65) / 7, 1);
-            this.color = [color, color, color, 1.0];
+            var color = Math.min((4 + elevation*2) / 7, 1);
+
+            switch(biome){
+                case 1:
+                    this.color = [0.65*color, 0.95*color, 0.75*color, 1.0];
+                    break;
+                case 2:
+                    this.color = [0.92*color, 0.84*color, 0.50*color, 1.0];
+                    break;
+                case 3:
+                    this.color = [0.47*color, 0.95*color, 0.55*color, 1.0];
+                    break;
+                case 4:
+                    this.color = [0.85*color, 0.87*color, 0.90*color, 1.0];
+                    break;
+                case 5:
+                    this.color = [0.95*color, 0.90*color, 0.66*color, 1.0];
+                    break;
+                case 6:
+                    this.color = [0.07*color, 0.77*color, 0.07*color, 1.0];
+                    break;
+                case 7:
+                    this.color = [0.97, 0.97, 1.0, 1.0];
+                    break;
+                default:
+                    this.color = [color, color, color, 1.0];
+            }
+
+
+
+
             if (biome==0) this.color = [
                 0.40 + elevation * 0.15,
                 0.60 + elevation * 0.15,
@@ -148,30 +200,30 @@ define(["lib/TWGL.min"],
                 1.0
             ];
             // sets indices based on terrain
-            var terrain = Math.floor((elevation + 1) * 3);
+            var terrain = (biome==0) ? 0 : Math.floor((elevation + 1) * 3);
             switch(terrain){
                 case 0: // OCEAN
-                    this.indices = indexSets;
+                    this.indices = meshes[0];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 1: // VALLEYS
-                    this.indices = indexSets;
+                    this.indices = meshes[1];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 2: // LOWLANDS
-                    this.indices = indexSets;
+                    this.indices = meshes[2];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 3: // FLATS
-                    this.indices = indexSets;
+                    this.indices = meshes[3];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 4: // HILLS
-                    this.indices = indexSets;
+                    this.indices = meshes[4];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 case 5: // MOUNTAINS
-                    this.indices = indexSets;
+                    this.indices = meshes[5];
                     this.normals = FaceNormals(Tile.mesh, this.indices);
                     break;
                 default: // UNDEFINED

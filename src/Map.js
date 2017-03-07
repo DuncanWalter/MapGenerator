@@ -19,7 +19,7 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
         */
         return function Map(settings) {
 
-            var h = this.height = settings.size.height;
+            var h = this.height = settings.size.height + 2;
             var w = this.width  = settings.size.width;
             var tiles = new Array(this.width * this.height);
             for(var i = 0; i < tiles.length; i++){
@@ -133,13 +133,13 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
                 if(index != undefined)sporeBiome(tiles[index]);
             });
             function sporeBiome(tile){
-                var options = adjacentTo(tile).reduce(function(a, c){
+                var options = adjacentTo(tile).reduce(function(accum, c){
                     if(c.biome != undefined){
-                        a.push(c.biome);
+                        accum.push(c.biome);
                     } else {
                         active.push(c); // sneak this in here...
                     }
-                    return a;
+                    return accum;
                 }, []);
                 if(options.length == 0){
                     if(Math.random() > ((tile.isLand) ? 0.98 : 0.09 /*chaos variables*/)){
@@ -157,14 +157,13 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
 
             var perlinAt = new PerlinAt(noiseSize, settings.elevationPerlin);
 
+
+
+
             this.tiles = tiles.map(function(tile, index){
-                var t = new Tile(index, tile.biome, perlinAt(pointAt(index)));
-                if (tile.biome == 0) {
-                    // t.color = [0.55, 0.75, 0.90, 1];
-                } else {
-                    // add elevation stats
-                }
-                return t;
+                return (index >= w && index < w*h-w) ?
+                    new Tile(index, tile.biome, perlinAt(pointAt(index))):
+                    new Tile(index, 7, perlinAt(pointAt(index)));
             });
 
 
