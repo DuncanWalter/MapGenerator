@@ -14,6 +14,7 @@ define(function(){
         uniform vec3 u_lightAngle;\
         uniform vec3 u_viewPosition;\
         uniform vec4 u_materialTraits;\
+        uniform vec4 u_lightColor;\
         \
         attribute vec3 a_position;\
         attribute vec3 a_normal;\
@@ -25,6 +26,7 @@ define(function(){
         varying vec3 v_viewPosition;\
         varying vec3 v_vertPosition;\
         varying vec4 v_color;\
+        varying vec4 v_lightColor;\
         \
         varying float v_ambient;\
         varying float v_diffuse;\
@@ -33,6 +35,7 @@ define(function(){
         \
         void main() {\
         \
+            v_lightColor = u_lightColor;\
             v_ambient = u_materialTraits[0];\
             v_diffuse = u_materialTraits[1];\
             v_specular = u_materialTraits[2];\
@@ -58,6 +61,7 @@ define(function(){
         varying vec3 v_viewPosition;\
         varying vec3 v_vertPosition;\
         varying vec4 v_color;\
+        varying vec4 v_lightColor;\
         varying float v_ambient;\
         varying float v_diffuse;\
         varying float v_specular;\
@@ -80,12 +84,10 @@ define(function(){
         \
             vec4 matteColor = (vec4(amb + diff, amb + diff, amb + diff, 1.0) * v_color);\
         \
-            gl_FragColor = spec * (vec4(1.0, 1.0, 1.0, 1.0)-matteColor) + matteColor;\
+            gl_FragColor = spec * (v_lightColor-matteColor) + matteColor;\
         }\
         </script>"
     );
-    //float spec = v_specular * pow(max(dot(viewAngle, normalize(-v_lightAngle - 2.0*dot(v_normal, -v_lightAngle)*v_normal)), 0.0), v_sheen);\
-
 
     return {vertex: vertexId, fragment: fragmentId}; // : {vertex: (ScriptId :: String), fragment: (ScriptId :: String)}
 });

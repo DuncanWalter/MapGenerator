@@ -20,30 +20,6 @@ define(["lib/TWGL.min", "src/Input"],
             var MAX_HEIGHT = (map.height - 1) * 0.75 / Math.tan(MIN_THETA / 2);
             var MED_HEIGHT = (map.height - 1) * 0.375 / Math.tan(MAX_THETA / 2);
 
-
-            // this.x = map.width/2*rt3;
-            // this.y = map.height*0.75 - 15;
-            // this.z = 14;
-
-            // var
-            // var acc = {};
-            // var vel = {};
-            // var pos = {x: , y: , z: , zoom: };
-
-            // var pan = twgl.Vec3.create(0, 0, 0);
-            // var panSettings = {};
-
-            // var zim = 1;
-
-            // var zoom = {
-            //     speed: 1,
-            //     friction: 1,
-            //     acceleration: 1,
-            //
-            // };
-            //
-
-
             this.navigate = (function(){
 
                 var zimocity = 1;
@@ -103,13 +79,6 @@ define(["lib/TWGL.min", "src/Input"],
 
             })();
 
-
-
-
-            this.getZoom = function(){
-                return zoom;
-            };
-
             this.getTheta = function(){
                 switch(true){
                     case zoom < 1.0:
@@ -151,6 +120,12 @@ define(["lib/TWGL.min", "src/Input"],
                 // establish shader uniforms
                 uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3) + 0.15]); // changes the position of the sun over time
                 uniforms.u_projection = twgl.m4.identity(); // actually calculated below
+                uniforms.u_lightColor = [
+                    Math.max(0, Math.min(1, uniforms.u_lightAngle[2] + 0.72)),
+                    Math.max(0, Math.min(1, uniforms.u_lightAngle[2] + 0.27)),
+                    Math.max(0, Math.min(1, uniforms.u_lightAngle[2] + 0.15)),
+                    1
+                ];
 
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
@@ -207,7 +182,6 @@ define(["lib/TWGL.min", "src/Input"],
 
 
             }
-
         }
     }
 );

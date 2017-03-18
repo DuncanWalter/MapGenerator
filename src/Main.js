@@ -27,7 +27,9 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 centrality:    [1, 1, 1]
             },
             continentPoisson: {
-                // TODO stop hardcoding map
+                continentCount: 2.2,
+                landMass: 0.75,
+                chaos: 0.072
             },
             size: {
                 width: 35,
@@ -81,7 +83,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             twgl.resizeCanvasToDisplaySize(gl.canvas);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // sets the background color for blending
-            gl.clearColor(0.0,0.0,0.0,1);
+            gl.clearColor(0.0,0.0,0.0,1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
@@ -187,6 +189,9 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
         // TODO hook up any html buttons / elements here
         $("#new-hex-scape").click(function(){
+            $(".lay-over").css("z-index", '1').css("opacity", '1');
+        });
+        $("#create").click(function(){
             map = new Map({
                 elevationPerlin: {
                     octaveSizes:   [3.5, 5.6, 12],
@@ -194,14 +199,19 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                     centrality:    [1, 1, 1]
                 },
                 continentPoisson: {
-                    // TODO stop hardcoding map
+                    continentCount: 2.2,
+                    landMass: parseFloat($("#landmass").val()),
+                    chaos: parseFloat($("#chaos").val())
                 },
                 size: {
-                    width: 65,
-                    height: 40
+                    width: parseFloat($("#width").val()),
+                    height: parseFloat($("#height").val())
                 }
             });
             camera = new Camera(gl, map);
+            setTimeout(function(){
+                $(".lay-over").css("z-index", '-7').css("opacity", '0');
+            }, 50);
         });
 
         // kicks off the rendering loop

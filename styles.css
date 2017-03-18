@@ -219,7 +219,7 @@ div.achievement:hover {
 .button:hover {
     background-color: #FAFAFA;
     color: #222222;
-    cursor: hand;
+    cursor: pointer;
 }
 input {
     background-color: transparent;
@@ -229,4 +229,57 @@ input {
     font-size: 13pt;
     border: none;
     color: #FAFAFA;
+}
+.lay-over {
+    transition: 0.7s;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -7;
+    opacity: 0;
+}
+
+
+
+
+
+
+
+
+
+input[type=range] {
+    -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+    width: 100%; /* Specific width is required for Firefox. */
+    height: 2pt;
+    padding: 0;
+    margin: 10pt 0 26pt;
+    background: #FAFAFA; /* Otherwise white in Chrome */
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    transition: 0.45s;
+    background-color: #222222;
+    width: 18pt;
+    height: 18pt;
+    cursor: pointer;
+    border: solid #FAFAFA 2pt;
+}
+input[type=range]::-webkit-slider-thumb:hover,
+input[type=range]::-webkit-slider-thumb:focus,
+input[type=range]::-webkit-slider-thumb:active {
+    background-color: #FAFAFA;
+}
+
+input[type=range]:focus, .button:focus {
+    outline: none;
+}
+
+input[type=range]::-ms-track {
+    width: 100%;
+    cursor: pointer;
+
+    /* Hides the slider so custom styles can be added */
+    background: #FAFAFA;
+    border-color: transparent;
+    color: transparent;
 }
