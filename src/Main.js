@@ -146,7 +146,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             });
 
             bufferInfo.numElements = index / 3;
-            uniforms.u_materialTraits = [0.24, 0.76, 0.25, 1.0];
+            uniforms.u_materialTraits = [0.33, 0.67, 0.25, 1.0];
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_normal, normals);
             twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);

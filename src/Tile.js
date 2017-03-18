@@ -166,22 +166,22 @@ define(["lib/TWGL.min"],
 
             switch(biome){
                 case 1:
-                    this.color = [0.65*color, 0.95*color, 0.75*color, 1.0];
+                    this.color = [0.82*color, 0.76*color, 0.46*color, 1.0];
                     break;
                 case 2:
-                    this.color = [0.92*color, 0.84*color, 0.50*color, 1.0];
+                    this.color = [0.58*color, 0.73*color, 0.49*color, 1.0];
                     break;
                 case 3:
-                    this.color = [0.47*color, 0.95*color, 0.55*color, 1.0];
+                    this.color = [0.15*color, 0.65*color, 0.07*color, 1.0];
                     break;
                 case 4:
-                    this.color = [0.85*color, 0.87*color, 0.90*color, 1.0];
+                    this.color = [0.47*color, 0.95*color, 0.55*color, 1.0];
                     break;
                 case 5:
-                    this.color = [0.95*color, 0.90*color, 0.66*color, 1.0];
+                    this.color = [0.85*color, 0.87*color, 0.90*color, 1.0];
                     break;
                 case 6:
-                    this.color = [0.07*color, 0.77*color, 0.07*color, 1.0];
+                    this.color = [1.15*color, 1.15*color, 1.2*color, 1.0];
                     break;
                 case 7:
                     this.color = [0.97, 0.97, 1.0, 1.0];
@@ -200,7 +200,7 @@ define(["lib/TWGL.min"],
                 1.0
             ];
             // sets indices based on terrain
-            var terrain = (biome==0) ? 0 : Math.floor((elevation + 1) * 3);
+            var terrain = (biome==0) ? 0 : Math.floor((2.5 * elevation) + 3.5);
             switch(terrain){
                 case 0: // OCEAN
                     this.indices = meshes[0];

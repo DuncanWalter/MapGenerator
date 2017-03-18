@@ -42,6 +42,70 @@ define(["lib/TWGL.min", "src/Input"],
             //
             // };
             //
+
+
+            this.navigate = (function(){
+
+                var zimocity = 1;
+                var MAX_ZIMOCITY = 2;
+
+                var panocity = {dx:0, dy:0};
+                var MAX_PANOCITY = MAX_HEIGHT / 15;
+                var PAN_ACCELERATION = 2.7;
+                var PAN_DECELERATION = 4.3;
+
+                return function(delta, input, cursor){
+                    if (delta > 1 / PAN_DECELERATION) return; // ignore insane input delays which would break the camera
+
+                    if (input.stateOf(69)) zimocity *= Math.pow(MAX_ZIMOCITY / zimocity, delta * 0.4) * Math.pow(zimocity, delta * 0.6);
+                    if (cursor.dw > 0)     zimocity *= Math.pow(MAX_ZIMOCITY / zimocity, delta * 1.2) * Math.pow(zimocity, delta * 0.6);
+                    if (input.stateOf(81)) zimocity /= Math.pow(MAX_ZIMOCITY / zimocity, delta * 0.4) * Math.pow(zimocity, delta * 0.6);
+                    if (cursor.dw < 0)     zimocity /= Math.pow(MAX_ZIMOCITY / zimocity, delta * 1.2) * Math.pow(zimocity, delta * 0.6);
+
+                    // navigating right via ->, D, or mouse position
+                    if (input.stateOf(39) || input.stateOf(68) || cursor.x > gl.canvas.clientWidth  - 10){
+                        panocity.dx += (delta * (MAX_PANOCITY - panocity.dx) * PAN_ACCELERATION) + (delta * panocity.dx * PAN_DECELERATION);
+                    }
+                    // navigating left via <-, A, or mouse position
+                    if (input.stateOf(37) || input.stateOf(65) || cursor.x < 10){
+                        panocity.dx -= (delta * (panocity.dx + MAX_PANOCITY) * PAN_ACCELERATION) - (delta * panocity.dx * PAN_DECELERATION);
+                    }
+                    // navigating up via ^, W, or mouse position
+                    if (input.stateOf(38) || input.stateOf(87) || cursor.y < 10){
+                        panocity.dy += (delta * (MAX_PANOCITY - panocity.dy) * PAN_ACCELERATION) + (delta * panocity.dy * PAN_DECELERATION);
+                    }
+                    // navigating down via v, S, or mouse position
+                    if (input.stateOf(40) || input.stateOf(83) || cursor.y > gl.canvas.clientHeight - 10){
+                        panocity.dy -= (delta * (panocity.dy + MAX_PANOCITY) * PAN_ACCELERATION) - (delta * panocity.dy * PAN_DECELERATION);
+                    }
+
+                    // decelerations due to camera friction
+                    panocity.dy -= (delta * panocity.dy) * PAN_DECELERATION;
+                    panocity.dy = (panocity.dy > 0) ? Math.max(0, panocity.dy - delta) : Math.min(0, panocity.dy + delta);
+                    panocity.dx -= (delta * panocity.dx) * PAN_DECELERATION;
+                    panocity.dx = (panocity.dx > 0) ? Math.max(0, panocity.dx - delta) : Math.min(0, panocity.dx + delta);
+                    zimocity /= Math.pow(zimocity, delta * 0.9);
+                    zimocity = (zimocity > 1) ? Math.max(1, zimocity - delta / 10) : Math.min(1, zimocity + delta / 10);
+
+
+
+
+                    // movement of the camera occurs here
+                    zoom *= zimocity;
+                    zoom = Math.min(Math.max(zoom, 1), MED_HEIGHT/2.5);
+                    focus[0] %= map.width * rt3;
+                    focus[0] += panocity.dx / zoom;
+                    focus[1] += panocity.dy / zoom;
+
+
+
+                }
+
+            })();
+
+
+
+
             this.getZoom = function(){
                 return zoom;
             };
@@ -81,44 +145,14 @@ define(["lib/TWGL.min", "src/Input"],
             this.update = function(delta, uniforms){
                 elapsed += delta;
 
-                console.log(zoom);
-
                 var cursor = input.pollCursor();
-                if (input.stateOf(69)) zoom *= 1.03;
-                if (cursor.dw > 0)     zoom *= 1.13;
-                if (input.stateOf(81)) zoom /= 1.03;
-                if (cursor.dw < 0)     zoom /= 1.13;
-                if (input.stateOf(39) || input.stateOf(68)) focus[0] += delta * 30 / zoom;
-                if (cursor.x > gl.canvas.clientWidth  - 10) focus[0] += delta * 30 / zoom;
-                if (input.stateOf(37) || input.stateOf(65)) focus[0] -= delta * 30 / zoom;
-                if (cursor.x < 10)                          focus[0] -= delta * 30 / zoom;
-                if (input.stateOf(38) || input.stateOf(87)) focus[1] += delta * 30 / zoom;
-                if (cursor.y < 10)                          focus[1] += delta * 30 / zoom;
-                if (input.stateOf(40) || input.stateOf(83)) focus[1] -= delta * 30 / zoom;
-                if (cursor.y > gl.canvas.clientHeight - 10) focus[1] -= delta * 30 / zoom;
-                zoom = Math.min(Math.max(zoom, 1), MED_HEIGHT/2.5);
-                focus[0] %= map.width * rt3;
-
-                // this.x += delta * 3;
-
-                // this.z = Math.sin(elapsed/5) * 12 + 20;
-                // this.y = map.height*0.75 + this.z / 2 - 16;
-
-                //
-                // // TODO fetch input
-                //
-                // var frictionMagntude = delta * friction;
-                // var manualMagnitude = delta * acc*(1 - vel/maxspd) + frictionMagnitude; // this use of friction magnitude is strange in R3
-                //
-                //
+                this.navigate(delta, input, cursor, 1);
 
                 // establish shader uniforms
-                uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3) + 0.15]);
+                uniforms.u_lightAngle = v3.normalize([Math.cos(elapsed/3), 0, Math.sin(elapsed/3) + 0.15]); // changes the position of the sun over time
                 uniforms.u_projection = twgl.m4.identity(); // actually calculated below
 
                 var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-
-
 
                 function calculateViewBox(that){
                     // vertical viewing angle, screen aspect ratio, near, far, memoryTarget
@@ -164,7 +198,6 @@ define(["lib/TWGL.min", "src/Input"],
                     focus[1] = (focus[1] - this.viewBR[1]);
                     calculateViewBox(this);
                 }
-
 
                 uniforms.u_viewPosition = this.getPosition();
 

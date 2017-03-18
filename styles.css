@@ -214,6 +214,7 @@ div.achievement:hover {
     transition: 0.45s ease;
     margin: 0 1.3rem 1.3rem;
     color: #FAFAFA;
+    cursor: pointer;
 }
 .button:hover {
     background-color: #FAFAFA;

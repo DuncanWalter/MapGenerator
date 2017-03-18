@@ -98,7 +98,7 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
 
             // spin up the continent shapes
             (new PoissonDistribution(noiseSize, { // poisson info
-                minRadius: Math.sqrt(3*h*w / 3/*continentCount*/),
+                minRadius: Math.sqrt(3*h*w / 2.2/*continentCount*/),
                 maxRadius: this.minRadius * 1.2,
                 nodeDensity: 12
             })).forEach(function(point){
@@ -126,7 +126,7 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
             dormant = [];
             active  = [];
             (new PoissonDistribution(noiseSize, {
-                minRadius: 9,
+                minRadius: 8,
                 nodeDensity: 12
             })).forEach(function(point){
                 var index = indexAt(point);
@@ -142,8 +142,14 @@ define(["src/PerlinAt", "src/PoissonDistribution", "src/Tile"],
                     return accum;
                 }, []);
                 if(options.length == 0){
-                    if(Math.random() > ((tile.isLand) ? 0.98 : 0.09 /*chaos variables*/)){
-                        tile.biome = 1 + Math.floor(6 * Math.random());
+                    if(Math.random() > ((tile.isLand) ? 0.98 : 0.05 /*chaos variables*/)){
+                        // TODO select biome based on elevation
+
+                        tile.biome = [
+                            [1, 1, 2, 3],
+                            [5, 4, 2, 3],
+                            [6, 6, 4, 5]
+                        ][Math.floor((Math.abs(0.5-Math.floor(tile.index/w)/h)*5.9999999))][Math.floor(Math.random()*4)];
                     } else {
                         tile.biome = 0;
                     }
