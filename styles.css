@@ -167,6 +167,8 @@ div.achievement {
     white-space: nowrap;
     padding: 2pt 2pt 0;
     margin: 0 1.3rem 1.3rem;
+    color: transparent;
+    text-overflow: clip;
 }
 div.achievement::after {
     color: rgba(255,255,255,0);
