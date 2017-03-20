@@ -31,9 +31,7 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
             "assets/Coast Modern-The Way It Was.mp3",
             "assets/Jon Bellion - Jungle.mp3",
             "assets/Ed Sheeran - Shape Of You Official Lyric Video.mp3",
-            "assets/Portugal. The Man - Feel It Still (Official Video).mp3",
-            "assets/COIN - Talk Too Much.mp3",
-            "assets/WALK THE MOON - Shut Up and Dance.mp3"
+            "assets/Portugal. The Man - Feel It Still (Official Video).mp3"
         ];
         songs.pick = function(){
             return this[Math.floor(Math.random()*this.length)];
@@ -145,36 +143,34 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
             twgl.setUniforms(plainSPI, uniforms);
             twgl.drawBufferInfo(gl, bufferInfo, gl.LINES); // actual drawing happens here
 
+            // DEBUG / BEHIND THE SCENES
 
-
-
-
-            var ci = 0, pi = 0;
-            positions = new Float32Array(CHANNELS * 6);
-            positions = new Float32Array(CHANNELS * 8);
-            sound.forEach(function(partition, index){
-
-                positions[pi++] = ((sound.boundaries[index-1] || 0) / 1024 * 2 - 1) * aspect;
-                positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
-                positions[pi++] = -1;
-
-                positions[pi++] = ((sound.boundaries[index]) / 1024 * 2 - 1) * aspect;
-                positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
-                positions[pi++] = -1;
-
-                colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
-                colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
-
-            });
-
-            bufferInfo.numElements = CHANNELS * 2;
-            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
-            twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
-
-            gl.useProgram(plainSPI.program);
-            twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
-            twgl.setUniforms(plainSPI, uniforms);
-            twgl.drawBufferInfo(gl, bufferInfo, gl.LINE_STRIP); // actual drawing happens here
+            // var ci = 0, pi = 0;
+            // positions = new Float32Array(CHANNELS * 6);
+            // positions = new Float32Array(CHANNELS * 8);
+            // sound.forEach(function(partition, index){
+            //
+            //     positions[pi++] = ((sound.boundaries[index-1] || 0) / 1024 * 2 - 1) * aspect;
+            //     positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
+            //     positions[pi++] = -1;
+            //
+            //     positions[pi++] = ((sound.boundaries[index]) / 1024 * 2 - 1) * aspect;
+            //     positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
+            //     positions[pi++] = -1;
+            //
+            //     colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
+            //     colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
+            //
+            // });
+            //
+            // bufferInfo.numElements = CHANNELS * 2;
+            // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_color, colors);
+            // twgl.setAttribInfoBufferFromArray(gl, bufferInfo.attribs.a_position, positions);
+            //
+            // gl.useProgram(plainSPI.program);
+            // twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
+            // twgl.setUniforms(plainSPI, uniforms);
+            // twgl.drawBufferInfo(gl, bufferInfo, gl.LINE_STRIP); // actual drawing happens here
 
 
             requestAnimationFrame(render);
