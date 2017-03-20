@@ -255,7 +255,7 @@ input[type=range] {
     height: 2pt;
     padding: 0;
     margin: 10pt 0 26pt;
-    background: #FAFAFA; /* Otherwise white in Chrome */
+    background: #FAFAFA;
 }
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -276,12 +276,3 @@ input[type=range]:focus, .button:focus {
     outline: none;
 }
 
-input[type=range]::-ms-track {
-    width: 100%;
-    cursor: pointer;
-
-    /* Hides the slider so custom styles can be added */
-    background: #FAFAFA;
-    border-color: transparent;
-    color: transparent;
-}

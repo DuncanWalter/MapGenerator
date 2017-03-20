@@ -5,8 +5,8 @@
 // TODO implement camera input responsiveness
 // TODO extend tile mesh and normalizing
 
-require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paperShaders", "src/PoissonDistribution", "src/Tile", "src/Utils"],
-    function(twgl, Map, Camera, plainShaders, paperShaders, PoissonDistribution, Tile, Utils) {
+require(["lib/TWGL.min", "src/Map", "src/Camera", "src/paperShaders", "src/PoissonDistribution", "src/Tile", "src/Input"],
+    function(twgl, Map, Camera, paperShaders, PoissonDistribution, Tile, Input) {
 
         var rt3 = Math.sqrt(3);
 
@@ -15,8 +15,6 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
         var canvas = document.getElementById("map-canvas");
         var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
-        // plainSPI : ShaderProgramInfo
-        var plainSPI = twgl.createProgramInfo(gl, [plainShaders.vertex, plainShaders.fragment]);
         // paperSPI : ShaderProgramInfo
         var paperSPI = twgl.createProgramInfo(gl, [paperShaders.vertex, paperShaders.fragment]);
 
@@ -75,7 +73,14 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
 
         var delta = 0; // delta : (Seconds :: float)
         var now = 0; // now : (POSIXTime :: int)
+        var renderStep = true;
         function render(time){ // render :: (time : POSIXTime) -> void
+            if(!renderStep){
+                renderStep = !renderStep;
+                requestAnimationFrame(render);
+                return;
+            }
+
             delta = (time - now) / 1000;
             now = time;
 
@@ -183,6 +188,7 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
             // use recursion to continue rendering
             // by piggybacking on the DOM render loop
             requestAnimationFrame(render);
+            renderStep = !renderStep;
         }
 
 
@@ -213,6 +219,39 @@ require(["lib/TWGL.min", "src/Map", "src/Camera", "src/plainShaders", "src/paper
                 $(".lay-over").css("z-index", '-7').css("opacity", '0');
             }, 50);
         });
+
+        var input = new Input();
+        var hud = true;
+        var unlocks = [false,false,false]; // nothing is unlocked by default
+        function unlock(n){
+            if(!unlocks[n]){
+                unlocks[n] = true;
+                $(".achievement").eq(n).addClass("complete");
+            }
+        }
+        input.onUp(72, function(){ // H
+            unlock(2);
+            $("div:not(.lay-over)").css("opacity", hud ? 0 : 1);
+            hud = !hud;
+        });
+        input.onUp(65, function(){ unlock(0); });
+        input.onUp(68, function(){ unlock(0); });
+        input.onUp(83, function(){ unlock(0); });
+        input.onUp(87, function(){ unlock(0); });
+        input.onUp(81, function(){ unlock(1); });
+        input.onUp(69, function(){ unlock(1); });
+
+        // makes all the achievements clickable without trashing the namespace
+        (function(){
+            var achievements = $(".achievement:not(.complete)");
+            for(var i = 0; i < achievements.length; i++){
+                achievements.eq(i).click((function(i){
+                    return function(){
+                        achievements.eq(i).addClass("complete");
+                    };
+                })(i));
+            }
+        })();
 
         // kicks off the rendering loop
         requestAnimationFrame(render);

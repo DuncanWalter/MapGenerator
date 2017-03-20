@@ -95,35 +95,20 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
             gl.clear(gl.COLOR_BUFFER_BIT);
             // enables a z test for the fragment shader
             gl.enable(gl.DEPTH_TEST);
-            // gl.enable(gl.CULL_FACE);
-            // // enables the alpha channel
-            // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            // gl.enable(gl.BLEND);
 
-
-
-
-            var c1 = 4.8; // lower numbers can detect finer changes, while higher numbers prevent effect from bleeding together
-            var c2 = 0.000006;
-
-
-            // TODO ever improve the visual!!!
             if(!paused){
                 sound = music.poll(delta);
                 for(var i = 0; i < sound.length; i++){
                     var current = sound[i].volume;
-                    if (volumes[i] < current) volumes[i] += (current - volumes[i]) * delta * c1; // Math.min((volumes[i]+105*delta), current);
-                    if (volumes[i] > current) volumes[i] += (current - volumes[i]) * delta * c1; // Math.max((volumes[i]-105*delta), current);
+                    if (volumes[i] < current) volumes[i] += (current - volumes[i]) * delta * 4.8; // Math.min((volumes[i]+105*delta), current);
+                    if (volumes[i] > current) volumes[i] += (current - volumes[i]) * delta * 4.8; // Math.max((volumes[i]-105*delta), current);
 
                     var c = 0.004;
                     var s = current - volumes[i];
                     s = Math.pow(Math.abs(s), 0.4) * ((s > 0) ? 1 : -1);
                     var u = 2 * Math.atan(c * s) / Math.PI;
 
-                    // console.log(sound[i].contrast);
-
                     radii[i] = ( ((u<0)?0:1) - radii[i] )*Math.abs(u) + radii[i];
-                    // console.log(radii);
                 }
 
                 palette.forEach(function(value, index){
@@ -169,10 +154,6 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
             positions = new Float32Array(CHANNELS * 8);
             sound.forEach(function(partition, index){
 
-                // positions[pi++] = ((sound.boundaries[index-1] || 0) / 1024 * 2 - 1);
-                // positions[pi++] = 1;
-                // positions[pi++] = -1;
-
                 positions[pi++] = ((sound.boundaries[index-1] || 0) / 1024 * 2 - 1) * aspect;
                 positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
                 positions[pi++] = -1;
@@ -181,14 +162,8 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
                 positions[pi++] = (partition.volume / 255 / 1024 * CHANNELS - 0.5) * -2;
                 positions[pi++] = -1;
 
-                // positions[pi++] = ((sound.boundaries[index]) / 1024 * 2 - 1);
-                // positions[pi++] = 1;
-                // positions[pi++] = -1;
-
                 colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
                 colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 0.17;colors[ci++] = 1.0;
-                // colors[ci++] = 0.55;colors[ci++] = 0.55;colors[ci++] = 0.55;colors[ci++] = 1.0;
-                // colors[ci++] = 0.55;colors[ci++] = 0.55;colors[ci++] = 0.55;colors[ci++] = 1.0;
 
             });
 
@@ -200,10 +175,6 @@ require(["lib/TWGL.min", "src/Audio", "src/Enigmagon", "src/plainShaders", "src/
             twgl.setBuffersAndAttributes(gl, plainSPI, bufferInfo);
             twgl.setUniforms(plainSPI, uniforms);
             twgl.drawBufferInfo(gl, bufferInfo, gl.LINE_STRIP); // actual drawing happens here
-
-
-
-
 
 
             requestAnimationFrame(render);
